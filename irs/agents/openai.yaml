@@ -1,4 +1,4 @@
 interface:
   display_name: "IRS"
-  short_description: "Analyze or implement guarded minimal changes with isolated review and simplification."
-  default_prompt: "Use IRS analysis or workflow for this coding change."
+  short_description: "Guard coding changes with review and simplification"
+  default_prompt: "Use $irs to handle this coding change in the appropriate analysis, implementation, review, or resume mode."

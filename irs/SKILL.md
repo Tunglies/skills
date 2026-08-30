@@ -1,296 +1,151 @@
 ---
 name: irs
-description: Use when the user says "irs", "IRS workflow", "3pass", "one implement one review one simplify", "一个编码一个审查一个更简代码", asks for IRS analysis or a plan without landing changes, asks to loop until the smallest behavior-preserving fix, or asks for a guarded coding workflow with one implementation pass, one independent correctness review, one code-simplification review, and convergence toward minimal change. Applies to behavior-preserving bug fixes, refactors, performance work, startup work, and minimal-scope changes where no behavior drift, no opportunistic cleanup, repository-specific validation, explicit acceptance, and controlled commits matter.
+description: Coordinate an Implement-Review-Simplify (IRS) coding workflow for coding requests that explicitly name IRS, 3pass, "one implement one review one simplify", "一个编码一个审查一个更简代码", or require a single writer plus independent correctness and simplification reviews. Supports analysis-only, implementation, existing-diff review, and resume/delivery modes. Do not use for tax or regulatory IRS topics, generic planning, or ordinary code review.
 ---
 
 # IRS
 
-IRS means Implement, Review, Simplify. Use it as a guarded coding workflow for changes where correctness, small scope, and review discipline matter.
+IRS means Implement, Review, Simplify. Use it to keep coding changes scoped, independently reviewed, and convergent.
 
 ## Core Contract
 
-- Preserve behavior unless the user explicitly requests behavior change.
-- Make the smallest scoped change that satisfies the request.
-- Do not make opportunistic cleanup.
-- If the user asks for analysis, a scheme, a plan, or says not to land changes, stay in analysis-only mode until they explicitly authorize implementation.
-- Do not commit unless the user explicitly asks.
-- Use one implementation pass, one independent correctness review, and one simplification review.
-- Iterate only to improve correctness, preserve behavior, or reduce unnecessary code; do not churn.
-- Keep agent roles isolated and pass each agent only the minimum context needed for its responsibility.
+- Preserve behavior outside the requested change.
+- Make the smallest change that satisfies the request; do not perform opportunistic cleanup.
+- Respect the user's current authorization. Analysis does not authorize edits, and a commit does not authorize push, tag, release, or PR creation.
+- Use one writer for all implementation and correction work.
+- Use a fresh read-only correctness reviewer and a separate fresh read-only simplification reviewer for a full IRS implementation.
 - Treat review passing as technical readiness, not user acceptance.
+- Do not claim a full IRS pass when required delegation or validation was unavailable; report the degraded gate explicitly.
 
-## Analysis-Only Mode
+## Select The Mode
 
-Use this mode when the user asks for IRS analysis, a scheme, a plan, comparison of approaches, or explicitly says not to land changes.
+Classify the whole request before starting. A word such as "plan" does not force analysis-only mode when the same request already authorizes implementation.
 
-In analysis-only mode:
+- **Analyze:** The user asks for IRS analysis, options, or a plan and does not authorize edits. Inspect the repository, produce the contract and recommendations, then stop at the implementation-authorization gate.
+- **Implement:** The user explicitly asks to edit, fix, refactor, optimize, or land a change. Planning within that request does not require a second authorization prompt.
+- **Review existing:** The user asks to review an existing diff, branch, or implementation without edits. Skip the writer and run the requested read-only correctness and simplification gates. Findings do not authorize fixes.
+- **Resume or deliver:** The user asks to continue an existing IRS task or perform an authorized delivery action. Inspect the current diff, revision, prior evidence, and authorization; resume at the earliest incomplete or stale gate instead of restarting completed work.
 
-- Do not edit files, create commits, or start implementation agents.
-- Read the repository enough to ground the analysis in actual files and local patterns.
-- Identify whether the request is a behavior change, behavior-preserving fix, refactor, performance change, startup change, or review-only task.
-- Produce an IRS Analysis Contract before any implementation plan is accepted.
-- If a requested implementation would exceed the proposed diff budget, call that out as a pending decision rather than silently widening scope.
-- Ask the user for implementation authorization before leaving analysis-only mode.
+When a request combines review and fixes, use Implement mode. When a missing choice would materially change behavior, public API, ownership, or authorized scope, stop for that decision rather than guessing.
 
-## IRS Analysis Contract
+## Canonical IRS Contract
 
-For analysis-only requests, or before high-risk/minimal-change implementation, produce this concise contract:
+Create one concise contract and use it as the source of truth for the main agent and every delegated role:
 
-```markdown
-## IRS Analysis Contract
+- mode and current authorization,
+- goal and non-goals,
+- allowed files or modules,
+- existing behavior to preserve and requested behavior to add or fix,
+- edge, failure, fallback, and state-transition paths that matter,
+- diff budget and allowed new state, helpers, types, APIs, or generated files,
+- chosen implementation shape and why smaller credible alternatives are unsafe or insufficient,
+- repository-native validation and manual checks,
+- baseline revision, current diff, completed gates, and open decisions.
 
-### Request Interpretation
-- Goal:
-- Non-goals:
-- Behavior change allowed: yes/no
-- Analysis-only: yes/no
+For analysis-only work, present these fields as an `IRS Analysis Contract`. Keep empty sections out. Add an option matrix only when two or more credible implementation shapes need comparison.
 
-### Repository Evidence
-- Relevant files/modules:
-- Existing patterns:
-- Unknowns:
+Do not recreate the contract independently in each agent prompt. Update it only when repository evidence, authorization, or the accepted scope changes. If implementation exceeds the budget:
 
-### Behavior Boundary
-- Existing behavior to preserve:
-- New or fixed behavior:
-- Edge paths:
-- Failure and fallback paths:
+- update and continue when the expansion remains inside the explicit request and introduces no new behavior, public contract, ownership, or external side effect;
+- otherwise stop at a pending decision and explain why the smaller boundary is invalid.
 
-### Option Matrix
-| Option | Scope | New state/API | Behavior risk | Diff size | Verdict |
-|--------|-------|---------------|---------------|-----------|---------|
+## Roles And Handoffs
 
-### Proposed Diff Budget
-- Expected files:
-- Expected kind of change:
-- New structures allowed:
-- Explicit exclusions:
+Every role receives the raw user request, the canonical contract, the baseline, the current diff or relevant files, and applicable repository instructions. Isolation means withholding other agents' conclusions, not withholding requirements or evidence.
 
-### Verification Plan
-- Targeted checks:
-- Broader checks if scope expands:
-- Manual checks:
+- **Writer:** Receives the selected shape, scope, non-goals, behavior boundary, diff budget, and validation expectations. It is the only role allowed to edit and handles all accepted corrections. It does not commit.
+- **Correctness reviewer:** Receives the behavior boundary, acceptance conditions, scope, full current diff, and validation evidence. It does not receive the writer's rationale unless a factual constraint cannot otherwise be understood.
+- **Simplification reviewer:** Receives the behavior boundary, non-goals, diff budget, full current diff, and the fact that correctness passed. It does not receive detailed correctness conclusions.
+- **Main agent:** Establishes the contract, inspects actual repository state and diffs, dispatches gates, records finding dispositions, validates, and performs only explicitly authorized delivery actions. It does not become a second writer.
 
-### Review Routing
-- Implementation agent scope:
-- Correctness reviewer focus:
-- Simplification reviewer focus:
+Use distinct fresh agents for the two review roles. If delegation is unavailable, the main agent may be the sole writer, but it must not present its own review as independent.
 
-### Pending Decisions
-- DEC-1:
-```
+## Deterministic Workflow
 
-Keep empty sections short. Mark unknowns explicitly instead of inventing facts. If no implementation is authorized, stop after the contract and recommendations.
+### 1. Establish State
 
-## Scope Lock
+- Read repository instructions and relevant code before choosing the shape.
+- Record the baseline revision and pre-existing dirty files.
+- Search callers and indirect reuse paths where contracts can propagate.
+- Lock the canonical contract before editing.
 
-Before implementation, identify:
+### 2. Implement With One Writer
 
-- Goal: the concrete bug, performance issue, or refactor target.
-- Non-goals: things that look related but should not be changed.
-- Allowed area: files/modules expected to change.
-- Behavior boundary: user-visible behavior that must remain unchanged.
-- Verification: how success will be checked.
+In Implement mode, assign exactly one writer. The writer changes only the allowed scope, validates proportionally, and returns changed files, diff-budget variance, and command results.
 
-If the expected diff is not small, say why before editing. When possible, name what will not be changed.
+In Review-existing mode, skip this step. In Resume mode, reuse the original writer when available and do not discard accepted work merely to recreate the workflow.
 
-## Diff Budget
+### 3. Main-Agent Integration
 
-Before editing, set a lightweight diff budget when the task is narrow or the user cares about minimality:
+Before review, the main agent reads the changed files and actual diff, then checks:
 
-- Expected files or modules to change.
-- Expected kind of change: local logic, call site, config, tests, docs.
-- Expected new structures: helpers, state, types, public API, generated files.
-- Explicit exclusions: files/modules that should not change.
+- the diff against the goal, non-goals, behavior boundary, and budget,
+- callers, edge paths, failures, fallbacks, and state transitions relevant to the task,
+- new state, helpers, abstractions, APIs, ownership, or generated files for necessity,
+- unrelated dirty files or artifacts for accidental inclusion,
+- validation evidence against repository conventions.
 
-If the actual diff exceeds the budget, pause and explain why before continuing or before final acceptance. After implementation, compare actual diff against the budget.
+Return integration blockers to the same writer. Do not start independent reviews on a diff known to be invalid.
 
-## Pre-Implementation Option Gate
+### 4. Correctness Gate
 
-For narrow or minimal-change tasks, especially performance and startup work, compare implementation shapes before editing:
+Send the full integrated diff to the independent correctness reviewer. Ask for evidence-backed findings covering requested behavior, unintended behavior drift, edge and error paths, cross-module contracts, tests, and validation gaps.
 
-- Smallest local change.
-- Explicit data-flow or call-site change.
-- Cache, state, singleton seeding, or cross-module API change if applicable.
+Record each finding with an ID, severity (`blocking` or `optional`), evidence, disposition (`accepted`, `deferred`, or `rejected`), reason, and owner. Only an accepted blocking finding automatically triggers edits.
 
-Choose the smallest behavior-preserving shape. Do not implement a shape that initializes unrelated modules earlier, widens lifecycle ownership, adds cross-module seeding APIs, or moves work into another startup/render path unless the smaller local shape is proven behaviorally unsafe.
+For an accepted blocker:
 
-When an option exceeds the diff budget, the implementation agent must report:
+1. Send the narrow issue to the same writer.
+2. Re-run affected validation.
+3. Send the full updated diff back through a full correctness review, highlighting the prior blocker without limiting review to it.
 
-- why the smaller option is invalid,
-- which files/modules become newly involved,
-- whether any lazy/deferred work becomes eager,
-- what new state/API is introduced,
-- and why the scope expansion is necessary.
+Do not start the simplification gate until correctness has no unresolved blocking findings.
 
-If this explanation is missing or weak, the main agent must not accept the implementation as final.
+### 5. Simplification Gate
 
-## Behavior Matrix
+Send the correctness-passing diff to the separate simplification reviewer. Ask it to identify unnecessary files, state, APIs, abstractions, helpers, duplication, and budget overruns, while naming guards or complexity that must remain for behavior.
 
-For behavior-preserving or high-risk changes, write a short behavior matrix before finalizing:
+Optional suggestions do not expand scope automatically. Apply only accepted simplifications that reduce meaningful complexity without weakening the contract.
 
-- Existing behavior that must remain unchanged.
-- New or fixed behavior.
-- Direct-entry or deep-link behavior.
-- State-transition behavior such as toggles, language/theme changes, cache refreshes, retries, and already-mounted views.
-- Error, fallback, empty, permission, and disabled-state behavior.
+If an accepted simplification changes logic, the same writer applies it, affected validation runs again, and the full diff returns to the correctness gate. If it changes no behavior-bearing logic, validate proportionally and record why a repeated correctness pass is unnecessary.
 
-Use the matrix to guide review and manual verification. Keep it concise; focus on paths that can regress.
+### 6. Close The Workflow
 
-## Agent Isolation
+Stop when all are true:
 
-Keep agent responsibilities separate to reduce context pollution:
+- the requested behavior and preservation boundary are satisfied,
+- no accepted blocking finding remains,
+- no smaller equally safe implementation remains from the simplification gate,
+- required validation passes or unavailable evidence is stated,
+- the diff fits the budget or an authorized expansion is recorded,
+- no unauthorized delivery action or unrelated change is included.
 
-- Implementation agent: receives the goal, allowed scope, behavior boundary, and validation expectations. Do not include expected review findings or simplification conclusions.
-- Correctness review agent: receives the goal and current diff or file paths. Do not include the implementer's rationale except when necessary to understand the intended behavior.
-- Simplification agent: receives the goal and current diff. Do not include correctness review conclusions unless a blocking correctness issue affects simplification.
-- Main agent: integrates results, resolves conflicts, validates, and decides whether another loop is required.
+Do not rerun a completed gate when the reviewed diff and relevant evidence are unchanged. Do not implement deferred, rejected, or purely stylistic suggestions merely to make every reviewer comment disappear.
 
-Prefer fresh agents for distinct roles. Do not ask one agent to both implement and approve its own work. When re-reviewing after a fix, provide the updated diff and the narrow prior blocking issue, not the full implementation narrative.
+## Risk-Specific Checks
 
-## Implementation Pass
+Apply only checks relevant to the task rather than treating one past failure mode as universal:
 
-Use one worker agent only when the user requested agent-based handling or this workflow requires delegation.
-
-Instruct the worker to:
-
-- Own a narrow file/module scope.
-- Compare plausible implementation shapes before editing when the change must be minimal.
-- Edit directly in its workspace.
-- Avoid unrelated cleanup.
-- Preserve behavior.
-- Stay within the diff budget or report why it cannot, including why smaller approaches are unsafe.
-- Treat new singleton seeding, cross-module initialization entry points, broad caches, public or crate-wide APIs, and lifecycle ownership changes as suspicious by default.
-- List changed files and validation results.
-- Not commit.
-
-After the worker returns, inspect the actual diff yourself before accepting it.
-
-## Main-Agent Integration
-
-Review the diff locally before sending it to reviewers:
-
-- Check `git diff --stat`.
-- Compare the actual diff with the diff budget.
-- Check the behavior matrix against changed code.
-- Read changed files, not only summaries.
-- Search call sites and indirect reuse paths with `rg`.
-- Check deep links, fallback paths, state transitions, and language/theme/cache changes when relevant.
-- Treat new state, new helpers, new abstractions, and public API changes as suspicious until justified.
-- For performance/startup/render fixes, run a reverse-performance check: confirm the fix does not make unrelated I/O, parsing, module initialization, subscriptions, timers, rendering, or singleton construction happen earlier.
-- Treat moving work from one startup/render path into another as a possible non-fix until the new timing and ownership are clear.
-- Confirm no unrelated files or generated artifacts were changed.
-
-If a blocking issue is found, fix only that issue and repeat the relevant review.
-
-## Convergence Loop
-
-After the first technically working fix, loop toward the smallest behavior-preserving diff.
-
-Use this loop:
-
-1. Establish behavior correctness: the requested behavior works and no known behavior drift remains.
-2. Establish a baseline diff: changed files, insertion/deletion count, new helpers, new state, and new public API surface.
-3. Ask whether each new moving part is required:
-   - Can existing source of truth replace new state?
-   - Can an existing helper or local pattern replace a new helper?
-   - Can a new abstraction become a local inline block?
-   - Can a changed public API stay compatible or remain private?
-   - Can a route/component/file avoid being touched?
-   - Can a cross-module seed/cache become a local one-time handoff?
-   - Does the diff initialize any unrelated module earlier than before?
-4. Apply only simplifications that preserve the established behavior.
-5. Re-run the relevant validation and review after any simplification that changes logic.
-6. Stop when further simplification would:
-   - reintroduce a reviewed bug,
-   - weaken an edge case,
-   - hide behavior behind clever code,
-   - remove useful validation/guards,
-   - or save only line count without reducing complexity.
-
-Report the final diff size if the user questioned size or minimality. Explain why remaining code is necessary.
-
-## Independent Review
-
-Send a read-only review task to an independent agent. Ask it to find:
-
-- Blocking bugs.
-- Behavior drift.
-- Behavior matrix gaps.
-- Edge cases and direct-entry paths.
-- Error/fallback regressions.
-- Missing tests or insufficient validation.
-- Cross-module contract risks.
-
-Do not ask the review agent to modify files. If it finds a blocking issue, fix the narrow issue and re-run review on the updated diff.
-
-## Simplification Review
-
-Send a read-only Code-Simplifier-style task. Ask it to find:
-
-- Unnecessary abstraction.
-- Helpers or types with too little payoff.
-- Duplicated state or duplicated source of truth.
-- Diff budget overruns.
-- Scope expansion beyond the request.
-- Code that can be removed without behavior change.
-- Places where further simplification would risk behavior drift.
-
-Do not reduce code solely to reduce line count. Prefer simpler behavior-preserving structure over smaller but riskier code.
-
-For tasks where the user explicitly emphasizes minimality, consider a read-only simplification/option review before implementation. Ask for the smallest safe implementation shape and known traps, then give the implementation agent only the chosen boundary, not the simplifier's conclusions.
+- For performance, startup, or render work, confirm that work was removed or delayed rather than shifted earlier or into another critical path.
+- For concurrency, persistence, lifecycle, protocol, or public-contract changes, identify the exact invariants and failure evidence needed before implementation.
+- For generated sources or lockfiles, distinguish repository-required deliverables from disposable local output.
 
 ## Validation
 
-Use the repository's own validation conventions.
+Discover and use repository-native checks. Match validation scope to risk, run `git diff --check` when Git is available, and report commands and results exactly. Static checks do not prove runtime, device, production, or performance behavior.
 
-- Discover validation commands from local project files before choosing commands:
-  - `package.json`
-  - lockfiles such as `pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`, `bun.lockb`
-  - `Cargo.toml`
-  - `Makefile`, `justfile`, `Taskfile.yml`
-  - CI configs such as `.github/workflows/*`
-  - lint/type/test configs near touched files
-- Prefer existing repo scripts or tasks over raw tool commands.
-- Match validation scope to change risk:
-  - narrow source edits: lint/type/format or targeted tests
-  - shared contracts, routing, startup, generated types, bundling, or runtime initialization: broader test/build checks
-- Run `git diff --check` when git is available.
-- Report exactly which commands ran and whether they passed.
-- If validation cannot be run, say why and state residual risk.
+If a review or validation gate cannot run, state the missing evidence and residual risk instead of silently treating the gate as passed.
 
-Do not assume a package manager, language, framework, or test runner unless the repository shows it.
+## Delivery
 
-## Acceptance And Session Notes
+Commit, push, tag, release, and PR creation are separate authorization boundaries.
 
-If the task uses a session-local notes file:
-
-- Keep it local-only.
-- Exclude it via `.git/info/exclude`, not project `.gitignore`, unless the user asks otherwise.
-- Update it with status, changed files, validation, review results, residual risk, and manual acceptance.
-- Mark accepted only when the user confirms acceptance or asks to mark it accepted.
-
-## Commit Rules
-
-Commit only after explicit user instruction.
-
-Before committing:
-
-- Re-check `git status --short`.
-- Stage only files relevant to the fix.
-- Exclude session notes, caches, build output, local generated artifacts, and unrelated dirty files.
-- If hooks or formatters modify files, re-check the diff before finalizing.
-
-Use a commit title that names the actual mechanism or behavior changed.
+Before an authorized commit, re-check status and the full diff, stage exact relevant paths, include repository-required generated files, exclude unrelated dirty files and disposable artifacts, and re-check any hook changes. Report the commit and remote state separately.
 
 ## Reporting
 
-When reporting back, include:
+Report the selected mode, contract or material scope decisions, changed files, behavior before and after, validation, correctness and simplification dispositions, diff-budget result, residual risk, and exact delivery state. For review-only work, lead with findings and state clearly that no files were changed.
 
-- What changed.
-- What benefit it gives.
-- Why behavior is preserved.
-- Whether the change is minimal.
-- What validation passed.
-- What review and simplification found.
-- How the user can manually verify it.
+## Skill Evals
+
+When changing this skill, use the positive and negative prompt cases in [evals/cases.yaml](evals/cases.yaml). Evaluate mode, side effects, agent topology, resume behavior, and delivery authorization, not exact wording. Run realistic forward tests in an isolated temporary workspace when delegation is authorized.

@@ -1,0 +1,72 @@
+version: 1
+cases:
+  - id: analysis-only
+    prompt: 'Use $irs to analyze the startup regression and compare options. Do not edit files.'
+    expected:
+      invoke: true
+      mode: analyze
+      writes: false
+      implementation_writers: 0
+      next_gate: implementation_authorization
+
+  - id: plan-and-implement
+    prompt: 'Use $irs to compare the smallest safe fixes, then implement and validate the best option. Do not commit.'
+    expected:
+      invoke: true
+      mode: implement
+      redundant_authorization_prompt: false
+      implementation_writers: 1
+      correctness_reviewers: 1
+      simplification_reviewers: 1
+      commit: false
+
+  - id: chinese-implement
+    prompt: '用 IRS 最小落地这个回归，独立审查和精简，不要 commit。'
+    expected:
+      invoke: true
+      mode: implement
+      implementation_writers: 1
+      correctness_reviewers: 1
+      simplification_reviewers: 1
+      commit: false
+
+  - id: review-existing
+    prompt: 'Use $irs to review and simplify the current diff. Do not modify it.'
+    expected:
+      invoke: true
+      mode: review_existing
+      writes: false
+      implementation_writers: 0
+      correctness_reviewers: 1
+      simplification_reviewers: 1
+
+  - id: resume-at-simplification
+    prompt: 'Resume the existing $irs task. Correctness already passed on the unchanged diff; continue from simplification.'
+    expected:
+      invoke: true
+      mode: resume_or_deliver
+      repeat_completed_gates: false
+      resume_from: simplification
+
+  - id: commit-does-not-push
+    prompt: 'Use $irs to finish the verified fix and commit it. Do not push.'
+    expected:
+      invoke: true
+      mode: implement
+      commit: true
+      push: false
+
+  - id: tax-irs
+    prompt: 'Review the latest US IRS reporting rules for contractor income.'
+    expected:
+      invoke: false
+
+  - id: generic-plan
+    prompt: 'Give me a migration plan and do not change any files.'
+    expected:
+      invoke: false
+
+  - id: ordinary-review
+    prompt: 'Review this pull request for correctness issues.'
+    expected:
+      invoke: false
