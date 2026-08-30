@@ -11,9 +11,10 @@ target_root=${CODEX_HOME:-${HOME:?HOME must be set}/.codex}/skills
 
 usage() {
   cat <<'EOF'
-Usage: ./install-local.sh [options] <skill-name>
+Usage: ./install-local.sh [options] [skill-name]
 
 Install or replace a skill from this repository.
+Omit skill-name to install every top-level directory containing SKILL.md.
 
 Options:
   --link              Link the repository skill into the target (default).
@@ -92,9 +93,30 @@ if (($# > 0)); then
 fi
 (($# == 0)) || die 'exactly one skill name is required'
 
-[[ -n $skill_name ]] || die 'a skill name is required'
-[[ $skill_name =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "invalid skill name: $skill_name"
 [[ -n $target_root && $target_root != / ]] || die 'target root must not be empty or /'
+
+if [[ -z $skill_name ]]; then
+  discovered_skills=()
+  for candidate in "$repo_root"/*; do
+    [[ -d $candidate && -f $candidate/SKILL.md ]] || continue
+    candidate_name=${candidate##*/}
+    [[ $candidate_name =~ ^[a-z0-9][a-z0-9-]*$ ]] ||
+      die "invalid repository skill name: $candidate_name"
+    discovered_skills+=("$candidate_name")
+  done
+
+  ((${#discovered_skills[@]} > 0)) || die 'no repository skills found'
+  install_args=("--$mode" --target-root "$target_root")
+  ((dry_run == 0)) || install_args+=(--dry-run)
+
+  printf 'Installing %d skill(s)\n' "${#discovered_skills[@]}"
+  for discovered_skill in "${discovered_skills[@]}"; do
+    "$repo_root/install-local.sh" "${install_args[@]}" "$discovered_skill"
+  done
+  exit 0
+fi
+
+[[ $skill_name =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "invalid skill name: $skill_name"
 
 source_dir="$repo_root/$skill_name"
 destination="$target_root/$skill_name"
