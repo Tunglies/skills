@@ -7,145 +7,53 @@ description: Coordinate an Implement-Review-Simplify (IRS) coding workflow for c
 
 IRS means Implement, Review, Simplify. Use it to keep coding changes scoped, independently reviewed, and convergent.
 
-## Core Contract
+## Rules
 
-- Preserve behavior outside the requested change.
-- Make the smallest change that satisfies the request; do not perform opportunistic cleanup.
-- Respect the user's current authorization. Analysis does not authorize edits, and a commit does not authorize push, tag, release, or PR creation.
-- Use one writer for all implementation and correction work.
-- Use a fresh read-only correctness reviewer and a separate fresh read-only simplification reviewer for a full IRS implementation.
-- Treat review passing as technical readiness, not user acceptance.
-- Do not claim a full IRS pass when required delegation or validation was unavailable; report the degraded gate explicitly.
+- Preserve behavior outside the request and avoid opportunistic cleanup. Prefer the smallest change satisfying one canonical contract.
+- Respect current authorization. Analysis does not authorize edits; commit does not authorize push, tag, release, or PR creation.
+- Use one writer for implementation and every accepted correction. Reviewers never edit; the main agent edits only when explicitly designated as the fallback sole writer.
+- A full implementation uses a fresh read-only correctness reviewer and a separate fresh read-only simplification reviewer.
+- Report unavailable delegation or validation; never claim an incomplete gate passed.
+- Review passing means technical readiness, not user acceptance.
 
-## Select The Mode
+## Choose One Mode
 
-Classify the whole request before starting. A word such as "plan" does not force analysis-only mode when the same request already authorizes implementation.
+Classify the whole request. Planning inside an already authorized implementation does not require another authorization.
 
-- **Analyze:** The user asks for IRS analysis, options, or a plan and does not authorize edits. Inspect the repository, produce the contract and recommendations, then stop at the implementation-authorization gate.
-- **Implement:** The user explicitly asks to edit, fix, refactor, optimize, or land a change. Planning within that request does not require a second authorization prompt.
-- **Review existing:** The user asks to review an existing diff, branch, or implementation without edits. Skip the writer and run the requested read-only correctness and simplification gates. Findings do not authorize fixes.
-- **Resume or deliver:** The user asks to continue an existing IRS task or perform an authorized delivery action. Inspect the current diff, revision, prior evidence, and authorization; resume at the earliest incomplete or stale gate instead of restarting completed work.
+- **Analyze:** No edits. Read [references/analysis.md](references/analysis.md), return the analysis contract and recommendations, then stop at the implementation gate.
+- **Implement:** Edits are requested. Read [references/workflow.md](references/workflow.md) and run every gate.
+- **Review existing:** Review without edits. Read [references/workflow.md](references/workflow.md), skip the writer, and run correctness plus simplification unless the user requests a narrower read-only gate. Findings do not authorize fixes.
+- **Resume or deliver:** Continue prior work or perform an authorized delivery action. Read [references/workflow.md](references/workflow.md), verify current diff, revision, evidence, and authorization, then resume at the earliest stale or incomplete gate.
 
-When a request combines review and fixes, use Implement mode. When a missing choice would materially change behavior, public API, ownership, or authorized scope, stop for that decision rather than guessing.
+Also read [references/performance-startup.md](references/performance-startup.md) only for performance, startup, or render work. Review plus fixes uses Implement mode. Ask for a missing decision only when it changes behavior, public API, ownership, authorized scope, or external side effects.
 
-## Canonical IRS Contract
+## Canonical Contract
 
-Create one concise contract and use it as the source of truth for the main agent and every delegated role:
+Record one shared source of truth before dispatching work:
 
-- mode and current authorization,
-- goal and non-goals,
-- allowed files or modules,
-- existing behavior to preserve and requested behavior to add or fix,
-- edge, failure, fallback, and state-transition paths that matter,
-- diff budget and allowed new state, helpers, types, APIs, or generated files,
-- chosen implementation shape and why smaller credible alternatives are unsafe or insufficient,
-- repository-native validation and manual checks,
-- baseline revision, current diff, completed gates, and open decisions.
+- mode, authorization, baseline revision, current diff, and completed gates;
+- goal, non-goals, allowed files or modules, and open decisions;
+- preserved and requested behavior, including relevant edge and failure paths;
+- diff budget, allowed new structures, chosen shape, and why smaller credible shapes fail;
+- repository-native validation and required manual or runtime evidence.
 
-For analysis-only work, present these fields as an `IRS Analysis Contract`. Keep empty sections out. Add an option matrix only when two or more credible implementation shapes need comparison.
+Give every role the raw request, contract, repository instructions, and current diff or relevant files. Isolate other agents' conclusions, not requirements or evidence. Update the contract only for new evidence, authorization, or accepted scope.
 
-Do not recreate the contract independently in each agent prompt. Update it only when repository evidence, authorization, or the accepted scope changes. If implementation exceeds the budget:
+## Gate Order
 
-- update and continue when the expansion remains inside the explicit request and introduces no new behavior, public contract, ownership, or external side effect;
-- otherwise stop at a pending decision and explain why the smaller boundary is invalid.
+1. Inspect repository state and lock the contract.
+2. For Implement mode, assign exactly one writer; skip it for Review existing.
+3. The main agent integrates the actual diff before review without editing it.
+4. A fresh correctness reviewer examines the full diff. An accepted blocker returns to the same writer, then the full updated diff is reviewed again.
+5. After correctness passes, a separate fresh simplification reviewer seeks a smaller equally safe shape. Accepted logic changes return to the same writer and then correctness review.
+6. Validate and close only when no accepted blocker or required simplification remains.
 
-## Roles And Handoffs
+Do not rerun an unchanged completed gate. Optional, deferred, rejected, or stylistic findings do not trigger edits merely to clear comments.
 
-Every role receives the raw user request, the canonical contract, the baseline, the current diff or relevant files, and applicable repository instructions. Isolation means withholding other agents' conclusions, not withholding requirements or evidence.
+## Completion
 
-- **Writer:** Receives the selected shape, scope, non-goals, behavior boundary, diff budget, and validation expectations. It is the only role allowed to edit and handles all accepted corrections. It does not commit.
-- **Correctness reviewer:** Receives the behavior boundary, acceptance conditions, scope, full current diff, and validation evidence. It does not receive the writer's rationale unless a factual constraint cannot otherwise be understood.
-- **Simplification reviewer:** Receives the behavior boundary, non-goals, diff budget, full current diff, and the fact that correctness passed. It does not receive detailed correctness conclusions.
-- **Main agent:** Establishes the contract, inspects actual repository state and diffs, dispatches gates, records finding dispositions, validates, and performs only explicitly authorized delivery actions. It does not become a second writer.
+Finish when the contract and preservation boundary hold, review findings are resolved, required validation passes or missing evidence is explicit, the budget is accepted, and no unrelated or unauthorized action is included.
 
-Use distinct fresh agents for the two review roles. If delegation is unavailable, the main agent may be the sole writer, but it must not present its own review as independent.
+Report mode, material scope decisions, behavior before and after, changed files, validation, finding dispositions, budget, residual risk, and exact local and remote delivery state. For review-only work, lead with findings and state that no files changed.
 
-## Deterministic Workflow
-
-### 1. Establish State
-
-- Read repository instructions and relevant code before choosing the shape.
-- Record the baseline revision and pre-existing dirty files.
-- Search callers and indirect reuse paths where contracts can propagate.
-- Lock the canonical contract before editing.
-
-### 2. Implement With One Writer
-
-In Implement mode, assign exactly one writer. The writer changes only the allowed scope, validates proportionally, and returns changed files, diff-budget variance, and command results.
-
-In Review-existing mode, skip this step. In Resume mode, reuse the original writer when available and do not discard accepted work merely to recreate the workflow.
-
-### 3. Main-Agent Integration
-
-Before review, the main agent reads the changed files and actual diff, then checks:
-
-- the diff against the goal, non-goals, behavior boundary, and budget,
-- callers, edge paths, failures, fallbacks, and state transitions relevant to the task,
-- new state, helpers, abstractions, APIs, ownership, or generated files for necessity,
-- unrelated dirty files or artifacts for accidental inclusion,
-- validation evidence against repository conventions.
-
-Return integration blockers to the same writer. Do not start independent reviews on a diff known to be invalid.
-
-### 4. Correctness Gate
-
-Send the full integrated diff to the independent correctness reviewer. Ask for evidence-backed findings covering requested behavior, unintended behavior drift, edge and error paths, cross-module contracts, tests, and validation gaps.
-
-Record each finding with an ID, severity (`blocking` or `optional`), evidence, disposition (`accepted`, `deferred`, or `rejected`), reason, and owner. Only an accepted blocking finding automatically triggers edits.
-
-For an accepted blocker:
-
-1. Send the narrow issue to the same writer.
-2. Re-run affected validation.
-3. Send the full updated diff back through a full correctness review, highlighting the prior blocker without limiting review to it.
-
-Do not start the simplification gate until correctness has no unresolved blocking findings.
-
-### 5. Simplification Gate
-
-Send the correctness-passing diff to the separate simplification reviewer. Ask it to identify unnecessary files, state, APIs, abstractions, helpers, duplication, and budget overruns, while naming guards or complexity that must remain for behavior.
-
-Optional suggestions do not expand scope automatically. Apply only accepted simplifications that reduce meaningful complexity without weakening the contract.
-
-If an accepted simplification changes logic, the same writer applies it, affected validation runs again, and the full diff returns to the correctness gate. If it changes no behavior-bearing logic, validate proportionally and record why a repeated correctness pass is unnecessary.
-
-### 6. Close The Workflow
-
-Stop when all are true:
-
-- the requested behavior and preservation boundary are satisfied,
-- no accepted blocking finding remains,
-- no smaller equally safe implementation remains from the simplification gate,
-- required validation passes or unavailable evidence is stated,
-- the diff fits the budget or an authorized expansion is recorded,
-- no unauthorized delivery action or unrelated change is included.
-
-Do not rerun a completed gate when the reviewed diff and relevant evidence are unchanged. Do not implement deferred, rejected, or purely stylistic suggestions merely to make every reviewer comment disappear.
-
-## Risk-Specific Checks
-
-Apply only checks relevant to the task rather than treating one past failure mode as universal:
-
-- For performance, startup, or render work, confirm that work was removed or delayed rather than shifted earlier or into another critical path.
-- For concurrency, persistence, lifecycle, protocol, or public-contract changes, identify the exact invariants and failure evidence needed before implementation.
-- For generated sources or lockfiles, distinguish repository-required deliverables from disposable local output.
-
-## Validation
-
-Discover and use repository-native checks. Match validation scope to risk, run `git diff --check` when Git is available, and report commands and results exactly. Static checks do not prove runtime, device, production, or performance behavior.
-
-If a review or validation gate cannot run, state the missing evidence and residual risk instead of silently treating the gate as passed.
-
-## Delivery
-
-Commit, push, tag, release, and PR creation are separate authorization boundaries.
-
-Before an authorized commit, re-check status and the full diff, stage exact relevant paths, include repository-required generated files, exclude unrelated dirty files and disposable artifacts, and re-check any hook changes. Report the commit and remote state separately.
-
-## Reporting
-
-Report the selected mode, contract or material scope decisions, changed files, behavior before and after, validation, correctness and simplification dispositions, diff-budget result, residual risk, and exact delivery state. For review-only work, lead with findings and state clearly that no files were changed.
-
-## Skill Evals
-
-When changing this skill, use the positive and negative prompt cases in [evals/cases.yaml](evals/cases.yaml). Evaluate mode, side effects, agent topology, resume behavior, and delivery authorization, not exact wording. Run realistic forward tests in an isolated temporary workspace when delegation is authorized.
+When changing this skill, evaluate [evals/cases.yaml](evals/cases.yaml) for mode, side effects, agent topology, resume behavior, and delivery authorization, not exact wording. Use isolated forward tests when delegation is authorized.
