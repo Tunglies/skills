@@ -1,0 +1,70 @@
+version: 1
+cases:
+  - id: capture-active-irs
+    prompt: 'Pause this IRS implementation and leave a durable handoff for tomorrow. Do not commit.'
+    expected:
+      invoke: true
+      mode: capture
+      update_active_irs_contract: true
+      capture_at_current_gate: true
+      wait_for_technical_close: false
+      repository_edits: false
+      commit: false
+      record_outside_worktree_by_default: true
+
+  - id: resume-with-drift
+    prompt: 'Continue the task from its handoff, but first check whether branches, diffs, validation, or delivery state changed.'
+    expected:
+      invoke: true
+      mode: resume
+      revalidate_live_state: true
+      resume_embedded_irs_contract: true
+      resume_from_earliest_stale_gate: true
+      inherited_authorization: false
+
+  - id: standalone-handoff
+    prompt: 'Capture the exact state of this unfinished development task for another engineer, including the next command and stop condition.'
+    expected:
+      invoke: true
+      mode: capture
+      requires_irs: false
+      record_revision_bound: true
+
+  - id: close-is-not-delete
+    prompt: 'Close the completed development handoff and preserve what was delivered and what remains.'
+    expected:
+      invoke: true
+      mode: close
+      delete_record: false
+      delete_worktree: false
+
+  - id: ambiguous-record
+    prompt: 'Resume the work; there are two handoff files that might belong to this repository.'
+    expected:
+      invoke: true
+      writes: false_until_identity_resolved
+      overwrite_unrelated_record: false
+
+  - id: same-head-content-drift
+    prompt: 'Resume this handoff: HEAD and dirty path names match, but the staged diff and a relevant untracked file have different contents.'
+    expected:
+      invoke: true
+      mode: resume
+      worktree_fingerprint_changed: true
+      prior_handoff_stale: true
+      unchanged_confidence: false
+
+  - id: ordinary-summary
+    prompt: 'Summarize this article in three paragraphs.'
+    expected:
+      invoke: false
+
+  - id: git-only-status
+    prompt: 'Show git status for this clean repository.'
+    expected:
+      invoke: false
+
+  - id: same-turn-continue-consumer
+    prompt: 'Finish the source phase, then continue consumer work in this same turn.'
+    expected:
+      invoke: false

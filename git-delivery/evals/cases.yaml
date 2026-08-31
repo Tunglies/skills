@@ -1,0 +1,166 @@
+version: 1
+cases:
+  - id: inspect-readiness
+    prompt: 'Inspect whether the current reviewed diff is ready to commit, but do not stage or change anything.'
+    expected:
+      invoke: true
+      mode: inspect_readiness
+      writes: false
+      consume_existing_review: true
+
+  - id: inspect-existing-pr-read-only
+    prompt: 'Inspect existing PR 42 for delivery readiness and report its head, base, checks, and review state. Do not push or change the PR.'
+    expected:
+      invoke: true
+      mode: inspect_pr
+      writes: false
+      push: false
+      pr_mutation: false
+
+  - id: staged-only-whitespace-error
+    prompt: 'Audit commit readiness when the staged-delivery candidate has a whitespace error but the unstaged diff is clean.'
+    expected:
+      invoke: true
+      mode: inspect_readiness
+      candidate_phase: staged_delivery
+      staged_candidate_hygiene_checked: true
+      plain_unstaged_diff_check_sufficient: false
+      delivery_ready: false
+      commit: false
+
+  - id: exact-commit
+    prompt: 'Commit only the verified IRS changes in these three paths. Do not push.'
+    expected:
+      invoke: true
+      mode: commit
+      exact_path_staging: true
+      git_delivery_runs_reviewers: false
+      final_irs_candidate_required: true
+      push: false
+
+  - id: stage-final-candidate-then-commit
+    prompt: 'Commit the reviewed unstaged patch plus its relevant untracked file. Build the exact staged-delivery candidate, let final IRS review and validation bind it, then commit only if it remains unchanged.'
+    expected:
+      invoke: true
+      mode: commit
+      capture_original_index_before_mutation: true
+      stage_before_final_irs_gates: true
+      post_stage_patch_equals_authorized_candidate: true
+      commit_locked_snapshot_only: true
+      repeat_unchanged_final_gates: false
+
+  - id: intermediate-source-checkpoint-sequence
+    prompt: 'Prepare, commit, and push the exact source checkpoint needed by a consumer lock, then continue the same cross-repository IRS task. Do not create a PR.'
+    expected:
+      invoke: true
+      mode: commit
+      source_staged_candidate_prepared_first: true
+      source_final_gates_bind_staged_candidate: true
+      delivery_consumes_unchanged_source_lock: true
+      source_commit_authorized: true
+      source_push_authorized: true
+      source_pr_authorized: false
+      source_reachability_verified: true
+      contract_refreshed_after_source_delivery: true
+      stable_writer_identity: true
+
+  - id: unrelated-prestaged-content
+    prompt: 'Commit only the reviewed src change; an unrelated user documentation file is already staged and no established isolation procedure exists.'
+    expected:
+      invoke: true
+      mode: commit
+      exact_isolation_available: false
+      index_mutation: false
+      commit: false
+      stop_before_index_change: true
+
+  - id: mixed-hunks-same-path
+    prompt: 'Commit only the reviewed hunk in src/app.rs; the same file also contains unrelated user hunks and no established exact-patch procedure exists.'
+    expected:
+      invoke: true
+      mode: commit
+      exact_isolation_available: false
+      index_mutation: false
+      commit: false
+      broad_staging: false
+
+  - id: standalone-commit
+    prompt: 'Commit the current documentation change locally with message docs: clarify setup. Do not push.'
+    expected:
+      invoke: true
+      mode: commit
+      requires_irs: false
+      inspect_readiness: true
+      readiness_source: local_delivery
+      local_delivery_readiness_lock: true
+      lock_fields:
+        - index_tree
+        - candidate_patch
+        - worktree_fingerprint
+        - authorization
+        - evidence_gaps
+      invented_irs_reviews: false
+      unsafe_or_missing_required_evidence_blocks: true
+
+  - id: amend-current-head
+    prompt: 'Use IRS to amend the current HEAD with the reviewed staged-delivery candidate. Do not push.'
+    expected:
+      invoke: true
+      mode: amend
+      explicit_rewrite_authorization: true
+      old_commit: current_head
+      old_parent_recorded: true
+      complete_replacement_tree_recorded: true
+      final_irs_readiness_lock_consumed: true
+      git_delivery_reconstructs_irs_gates: false
+      push: false
+
+  - id: amend-needs-rewrite-authorization
+    prompt: 'Push the branch, but do not amend or rewrite the existing commit.'
+    expected:
+      invoke: true
+      mode: push
+      amend: false
+      rewrite: false
+
+  - id: push-is-not-pr
+    prompt: 'Push this exact branch to origin after verifying divergence. Do not create or update a PR.'
+    expected:
+      invoke: true
+      mode: push
+      verify_remote_ref: true
+      pr: false
+
+  - id: pr-does-not-merge
+    prompt: 'Create a PR from the already-pushed branch. Do not merge, tag, or release.'
+    expected:
+      invoke: true
+      mode: pr_create
+      merge: false
+      tag: false
+      release: false
+
+  - id: update-pr-exact-fields
+    prompt: 'Update only the title of existing PR 42. Do not push, retarget, add reviewers, or merge.'
+    expected:
+      invoke: true
+      mode: pr_update
+      authorized_fields:
+        - title
+      push: false
+      merge: false
+
+  - id: ordinary-git-status
+    prompt: 'Show git status for this repository.'
+    expected:
+      invoke: false
+
+  - id: ordinary-divergence-query
+    prompt: 'How many commits ahead or behind origin is this branch?'
+    expected:
+      invoke: false
+
+  - id: generic-file-delivery
+    prompt: 'Deliver the generated PDF to the output folder.'
+    expected:
+      invoke: false

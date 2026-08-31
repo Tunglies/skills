@@ -1,0 +1,4 @@
+interface:
+  display_name: "Development Handoff"
+  short_description: "Capture and resume exact development state"
+  default_prompt: "Use $dev-handoff to capture, resume, or close this development task with revision-bound state."

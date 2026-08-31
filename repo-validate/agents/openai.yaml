@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Validation"
+  short_description: "Build revision-bound validation evidence"
+  default_prompt: "Use $repo-validate to plan, run, or audit proportionate validation for this change."

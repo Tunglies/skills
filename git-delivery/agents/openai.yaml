@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Delivery"
+  short_description: "Deliver exact authorized Git state changes"
+  default_prompt: "Use $git-delivery to inspect or perform only the exact Git delivery actions I authorize."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cross-Repository Integrator"
+  short_description: "Coordinate dependency changes across repositories"
+  default_prompt: "Use $cross-repo-integrator to map and coordinate this multi-repository change safely."

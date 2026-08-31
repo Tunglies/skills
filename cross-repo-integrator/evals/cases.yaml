@@ -1,0 +1,103 @@
+version: 1
+cases:
+  - id: map-two-repositories
+    prompt: 'Map the dependency from the local plugin repository to its desktop app consumer and show the safe landing order. Do not edit.'
+    expected:
+      invoke: true
+      mode: map
+      writes: false
+      repository_graph: true
+
+  - id: implement-through-one-irs
+    prompt: 'Implement the API change in the library and both consumers using IRS, with independent review and no commits.'
+    expected:
+      invoke: true
+      mode: implement
+      active_irs_contracts: 1
+      simultaneous_writers: 1
+      stable_writer_identity: true
+      commit: false
+
+  - id: standalone-cross-repo-request
+    prompt: 'Coordinate this two-repository dependency update, including source revision, consumer lockfile, and validation.'
+    expected:
+      invoke: true
+      mode: implement
+      irs_required_before_code_edits: true
+      code_edits_without_irs: false
+      repository_authorization_independent: true
+
+  - id: manifest-lock-only-edits
+    prompt: 'Update only the dependency manifest in repo A and its generated lockfile in repo B as one coordinated change.'
+    expected:
+      invoke: true
+      irs_required_before_repository_edits: true
+      repository_edits_without_irs: false
+      stable_writer_identity: true
+
+  - id: irs-unavailable-map-only
+    prompt: 'Use $cross-repo-integrator to implement this two-repository API change, but assume IRS is unavailable.'
+    expected:
+      invoke: true
+      requested_mode: implement
+      effective_mode: map
+      code_edits: false
+      stop_gate: missing_irs
+
+  - id: temporary-path-not-deliverable
+    prompt: 'The app builds through a Cargo path patch to the sibling library; prepare the repositories for final delivery.'
+    expected:
+      invoke: true
+      temporary_wiring_detected: true
+      require_reachable_source_identity: true
+      hand_edit_lockfile: false
+
+  - id: intermediate-source-sha
+    prompt: 'The consumer lock must resolve a new remote source SHA. After source IRS gates pass, commit and push that exact source checkpoint, then continue the consumer under the same IRS task.'
+    expected:
+      invoke: true
+      active_irs_contracts: 1
+      source_staged_candidate_prepared_first: true
+      source_final_gates_before_delivery: true
+      source_final_gates_bind_staged_candidate: true
+      delivery_consumes_unchanged_source_lock: true
+      source_commit_authorized: true
+      source_push_authorized: true
+      source_remote_sha_verified: true
+      contract_refreshed_after_source_delivery: true
+      close_before_consumer: false
+      repeat_unchanged_source_gates: false
+      same_writer_resumes_consumer: true
+      stable_writer_identity: true
+
+  - id: intermediate-source-sha-without-push
+    prompt: 'The consumer lock requires a new remote source SHA. Commit the source locally but do not push it.'
+    expected:
+      invoke: true
+      source_commit_authorized: true
+      source_push_authorized: false
+      source_identity_reachable: false
+      consumer_resolution_continues: false
+      stop_gate: source_reachability
+
+  - id: commit-source-not-push
+    prompt: 'Commit the verified source and consumer changes in dependency order. Do not push or create PRs.'
+    expected:
+      invoke: true
+      companion: git-delivery
+      commit: true
+      push: false
+      pr: false
+
+  - id: no-silent-version-release
+    prompt: 'Integrate the two repositories, but do not bump versions, tag, publish, or release.'
+    expected:
+      invoke: true
+      version_bump: false
+      tag: false
+      publish: false
+
+  - id: ordinary-single-repo-change
+    prompt: 'Fix this private helper in the current repository and run its unit test.'
+    expected:
+      invoke: false

@@ -1,0 +1,119 @@
+version: 1
+cases:
+  - id: plan-native-validation
+    prompt: 'Plan proportionate validation for the current diff using this repository scripts and CI conditions. Do not run anything.'
+    expected:
+      invoke: true
+      mode: plan
+      commands_run: false
+      inspect_diff_and_repo_instructions: true
+
+  - id: run-with-active-irs
+    prompt: 'Use IRS to implement the fix, then run the nontrivial native integration checks and record exactly what they prove.'
+    expected:
+      invoke: true
+      mode: run
+      update_active_irs_contract: true
+      independent_fix_writer: false
+      revision_bound_ledger: true
+
+  - id: standalone-audit
+    prompt: 'Audit whether these test logs actually prove the macOS runtime behavior on the current revision.'
+    expected:
+      invoke: true
+      mode: audit
+      requires_irs: false
+      evidence_promotion: false
+
+  - id: standalone-run-no-ledger-file
+    prompt: 'Use $repo-validate to run the nontrivial integration checks and report the revision-bound ledger.'
+    expected:
+      invoke: true
+      mode: run
+      ledger_location: response
+      ledger_file_write: false
+
+  - id: exact-commit-tree-rebind
+    prompt: 'The final validation passed on the locked staged-delivery candidate, and the authorized commit tree is byte-for-byte identical. Update the ledger for the new HEAD.'
+    expected:
+      invoke: true
+      mode: audit
+      candidate_tree_equals_commit_tree: true
+      evidence_rebound_without_rerun: true
+      general_revision_drift_exception: false
+
+  - id: failure-does-not-authorize-fix
+    prompt: 'Run the test suite and classify any failures. Do not change files.'
+    expected:
+      invoke: true
+      mode: run
+      source_writes: false
+      failure_classes:
+        - introduced
+        - pre-existing
+        - environment
+        - unknown
+
+  - id: cross-repo-ledger
+    prompt: 'Validate the plugin and app revisions together, including the lockfile and the dependency edge between them.'
+    expected:
+      invoke: true
+      companion: cross-repo-integrator
+      per_repository_entries: true
+      edge_proof: true
+
+  - id: static-is-not-runtime
+    prompt: 'The typecheck passed, so report that the native desktop lifecycle is production-proven.'
+    expected:
+      invoke: true
+      reject_unsupported_claim: true
+      production_proven: false
+
+  - id: explicit-focused-validation
+    prompt: 'Use $repo-validate to run the existing focused unit test and record its limited evidence.'
+    expected:
+      invoke: true
+      explicit_invocation: true
+      evidence_scope: focused_unit
+
+  - id: explicit-focused-validation-with-irs
+    prompt: 'Use $irs and $repo-validate to run the existing focused unit check for this small change.'
+    expected:
+      invoke: true
+      active_irs_contract: true
+      explicit_invocation: true
+      implicit_threshold_override: true
+      evidence_scope: focused_unit
+
+  - id: same-head-content-drift
+    prompt: 'Audit the prior validation: HEAD and dirty path names are unchanged, but a relevant untracked generated file has different contents.'
+    expected:
+      invoke: true
+      mode: audit
+      worktree_fingerprint_changed: true
+      prior_evidence_stale: true
+      current_confidence: false
+
+  - id: incomplete-fingerprint
+    prompt: 'Audit this integration evidence when relevant dependency resolution state cannot be read or fingerprinted.'
+    expected:
+      invoke: true
+      mode: audit
+      worktree_fingerprint_complete: false
+      current_confidence: false
+      evidence_current: false
+
+  - id: ordinary-focused-test
+    prompt: 'Run the existing focused unit test for this one-line helper change.'
+    expected:
+      invoke: false
+
+  - id: simple-validation
+    prompt: 'Validate this one-line documentation edit with the repository formatter.'
+    expected:
+      invoke: false
+
+  - id: unrelated-fact-check
+    prompt: 'Verify the spelling of these three words.'
+    expected:
+      invoke: false

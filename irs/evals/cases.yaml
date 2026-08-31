@@ -41,10 +41,11 @@ cases:
       simplification_reviewers: 1
 
   - id: resume-at-simplification
-    prompt: 'Resume the existing $irs task. Correctness already passed on the unchanged diff; continue from simplification.'
+    prompt: 'Resume the existing $irs task from its durable handoff. Correctness already passed on the unchanged diff; continue from simplification.'
     expected:
       invoke: true
       mode: resume_or_deliver
+      companion: dev-handoff
       repeat_completed_gates: false
       resume_from: simplification
 
@@ -53,8 +54,141 @@ cases:
     expected:
       invoke: true
       mode: implement
+      companion: git-delivery
       commit: true
       push: false
+
+  - id: stage-before-final-delivery-gates
+    prompt: 'Use IRS to commit the reviewed unstaged change and its relevant untracked file. Stage only that exact staged-delivery candidate, run final review and validation on it, then commit without pushing.'
+    expected:
+      invoke: true
+      companion: git-delivery
+      preliminary_unstaged_review_is_final: false
+      stage_before_final_gates: true
+      final_candidate_phase: staged_delivery
+      final_gates_bind_same_candidate: true
+      repeat_after_unchanged_lock: false
+      commit: true
+      push: false
+
+  - id: intermediate-source-delivery
+    prompt: 'Use IRS across the library and app. The app lock must resolve a new remote library SHA; commit and push only the source checkpoint when its gates pass, then continue the consumer without repeating unchanged source gates.'
+    expected:
+      invoke: true
+      companions:
+        - cross-repo-integrator
+        - repo-validate
+        - git-delivery
+      active_irs_contracts: 1
+      intermediate_source_checkpoint: true
+      source_staged_candidate_prepared_first: true
+      source_final_gates_bind_staged_candidate: true
+      delivery_consumes_unchanged_source_lock: true
+      source_delivery_separately_authorized: true
+      contract_refreshed_after_source_delivery: true
+      close_before_consumer: false
+      repeat_unchanged_source_gates: false
+      same_writer_resumes_consumer: true
+      stable_writer_identity: true
+
+  - id: cross-repo-joint-routing
+    prompt: 'Use IRS to update the library and app consumer, validate the resolved revision and lockfile, then commit both in dependency order. Do not push.'
+    expected:
+      invoke: true
+      mode: implement
+      companions:
+        - cross-repo-integrator
+        - repo-validate
+        - git-delivery
+      dev_handoff: false
+      active_irs_contracts: 1
+      simultaneous_writers: 1
+      stable_writer_identity: true
+      push: false
+
+  - id: independent-multi-repo-edits
+    prompt: 'Change parser error handling in repo A and CLI option handling in repo B as one coordinated implementation, then validate both. Do not commit.'
+    expected:
+      invoke: true
+      companion: cross-repo-integrator
+      mode: implement
+      active_irs_contracts: 1
+      stable_writer_identity: true
+      commit: false
+
+  - id: same-turn-continue-no-handoff
+    prompt: 'Use IRS to finish the source phase, then continue consumer work in this same turn. Do not create a handoff.'
+    expected:
+      invoke: true
+      dev_handoff: false
+      durable_record: false
+      stable_writer_identity: true
+
+  - id: non-code-simplification-rereview
+    prompt: 'After the staged-delivery candidate passes correctness, accept a simplification that changes documentation, config, generated metadata, or another non-code byte.'
+    expected:
+      invoke: true
+      staged_candidate_reconstructed: true
+      candidate_bytes_changed: true
+      fresh_full_correctness_required: true
+      correctness_scope: full_updated_candidate
+      skip_correctness_rereview: false
+
+  - id: staged-only-whitespace-error
+    prompt: 'Audit final IRS commit readiness: the exact staged-delivery candidate has a whitespace error, while the unstaged diff is clean.'
+    expected:
+      invoke: true
+      companion: git-delivery
+      candidate_phase: staged_delivery
+      staged_candidate_hygiene_checked: true
+      plain_unstaged_diff_check_sufficient: false
+      final_hygiene_pass: false
+      delivery_ready: false
+      commit: false
+
+  - id: explicit-focused-repo-validation
+    prompt: 'Use $irs and $repo-validate to run the existing focused unit check for this small fix. Do not commit.'
+    expected:
+      invoke: true
+      companion: repo-validate
+      explicit_companion_overrides_threshold: true
+      focused_check_run: true
+      commit: false
+
+  - id: delivery-readiness-audit-routing
+    prompt: 'Use $irs to audit whether the current reviewed candidate is ready for Git delivery. Do not stage, commit, or push.'
+    expected:
+      invoke: true
+      companion: git-delivery
+      delivery_mode: inspect_readiness
+      index_mutation: false
+      commit: false
+      push: false
+
+  - id: simple-fix-no-companion-fanout
+    prompt: 'Use $irs to fix this one-line typo, run the existing focused check, and do not commit.'
+    expected:
+      invoke: true
+      mode: implement
+      companions: []
+      implementation_writers: 1
+      commit: false
+
+  - id: validation-failure-stays-with-writer
+    prompt: 'Use IRS for this native lifecycle fix and classify the integration failure before changing the implementation again.'
+    expected:
+      invoke: true
+      companion: repo-validate
+      validation_writer: false
+      accepted_fix_owner: existing_irs_writer
+
+  - id: durable-pause-routing
+    prompt: 'Pause this IRS task and capture enough state for a different engineer to continue tomorrow. Do not commit.'
+    expected:
+      invoke: true
+      companion: dev-handoff
+      handoff_updates_irs_contract: true
+      commit: false
 
   - id: tax-irs
     prompt: 'Review the latest US IRS reporting rules for contractor income.'
@@ -68,5 +202,10 @@ cases:
 
   - id: ordinary-review
     prompt: 'Review this pull request for correctness issues.'
+    expected:
+      invoke: false
+
+  - id: read-only-multi-repo-map
+    prompt: 'Map the repositories and dependency edges across this workspace. Do not edit files.'
     expected:
       invoke: false
