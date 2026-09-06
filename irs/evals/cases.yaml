@@ -1,5 +1,62 @@
 version: 1
 cases:
+  - id: independent-review-overlap
+    prompt: 'Use IRS on this stable candidate. Correctness and simplification can inspect it independently; no shared writes or unresolved design premise exists.'
+    expected:
+      invoke: true
+      parallel_reviews_allowed: true
+      same_candidate_for_both: true
+      integrate_both_before_readiness: true
+      simultaneous_writers: 1
+
+  - id: unavailable-writer-transfer
+    prompt: 'Resume the authorized local IRS fix. The old session writer no longer exists, and its partial changes are attributable. Do not commit.'
+    expected:
+      invoke: true
+      confirm_old_writer_inactive: true
+      inspect_partial_diff: true
+      record_writer_transfer: true
+      redundant_authorization_prompt: false
+      simultaneous_writers: 1
+      commit: false
+
+  - id: ambiguous-outcome-independent-progress
+    prompt: 'Use IRS to improve startup. Either faster first paint or faster network readiness could be the acceptance target; neither is specified. Repository inspection is independent of that choice.'
+    expected:
+      invoke: true
+      clarify_material_acceptance: true
+      explain_missing_information_and_impact: true
+      continue_independent_inspection: true
+      choose_unstated_acceptance_target: false
+
+  - id: steering-preserves-task
+    prompt: 'During the authorized IRS fix, the user asks for status and adds that existing CLI output must be preserved. Continue after compaction; the candidate is unchanged.'
+    expected:
+      invoke: true
+      answer_status: true
+      preserve_original_goal: true
+      reconcile_new_constraint: true
+      continue_remaining_work: true
+      repeat_unaffected_gates: false
+
+  - id: required-checks-complete
+    prompt: 'The IRS candidate passed both reviews and all required checks. There are no new changes, failures, or unresolved concerns; only an optional cleanup remains. Finish locally, no commit.'
+    expected:
+      invoke: true
+      broaden_validation: false
+      reopen_for_optional_cleanup: false
+      complete_local_outcome: true
+      commit: false
+
+  - id: new-acceptance-unchanged-bytes
+    prompt: 'Correctness and validation passed, but the user now adds a CLI compatibility requirement that neither covered. Candidate bytes are unchanged.'
+    expected:
+      invoke: true
+      inspect_prior_coverage: true
+      reopen_affected_gates: true
+      unchanged_bytes_prove_new_requirement: false
+      repeat_unaffected_gates: false
+
   - id: analysis-only
     prompt: 'Use $irs to analyze the startup regression and compare options. Do not edit files.'
     expected:

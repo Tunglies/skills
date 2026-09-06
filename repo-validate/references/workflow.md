@@ -22,6 +22,8 @@ Choose checks based on changed behavior and blast radius:
 
 Run narrow checks first when they give fast diagnostic value, then broader checks needed by the contract. Repository-native commands and established fixtures take precedence over invented harnesses. Performance claims require controlled measurements against a relevant baseline, not code shape alone.
 
+After required checks pass, return to the remaining authorized task. Repeat or broaden checks only for new changes, failures, or unresolved concerns. Reuse unaffected evidence with its original scope; do not label it as a new run. Independent checks may run concurrently when their side effects and resources are isolated.
+
 Diff hygiene follows the candidate phase. For a staged-delivery candidate, check the exact staged patch against its recorded baseline with `git diff --cached --check` or an equivalent locked candidate-tree/patch check. Plain `git diff --check` covers unstaged changes and cannot prove staged-candidate hygiene. For a working candidate, check each applicable component separately: staged changes, unstaged changes, and relevant untracked contents. Do not let unrelated unstaged work substitute for the candidate or report unchecked components as clean.
 
 Before commands likely to generate files or alter an installation, record the worktree fingerprint. Fingerprint again afterward and report side effects; do not clean or revert user files without authorization.
@@ -35,7 +37,7 @@ When final commit readiness is requested, bind validation to the staged-delivery
 - **Environment:** Evidence identifies a missing tool, permission, service, credential, platform, network, capacity, or other external prerequisite.
 - **Unknown:** Available evidence cannot distinguish the above.
 
-Do not switch baselines, patch code, install unrequested dependencies, or relax checks merely to classify a failure. Under an active IRS implementation, submit the finding for disposition; only its already-authorized IRS-designated sole writer may apply an accepted in-scope fix.
+Do not switch baselines, patch code, install unrequested dependencies, or relax checks merely to classify a failure. Return an in-scope failure to the already-authorized implementation owner and continue after the fix; under IRS this is its sole writer. A validation-only or read-only request still ends with findings, not source edits.
 
 ## Revision-Bound Ledger
 

@@ -1,6 +1,6 @@
 ---
 name: dev-handoff
-description: Capture, resume, transfer, or close durable development handoffs when a coding task crosses sessions or people, the user requests durable pause/stop state, or work continues from an existing handoff. Revalidates repository drift and enriches an active IRS contract without implementing, reviewing, validating, committing, or pushing. Do not use for ordinary same-turn continuation or a pause with no durable-state need.
+description: Capture, resume, transfer, or close a durable development handoff for a cross-session task, a requested durable pause, or an existing handoff record. Revalidate drift and return control to the authorized workflow on resume. Do not use for ordinary same-turn continuation, status questions, or a pause with no durable-state need; the record grants no new edit or delivery permission.
 ---
 
 # Development Handoff
@@ -9,7 +9,7 @@ Preserve enough revision-bound state that the next worker can continue at the fi
 
 ## Rules
 
-- Treat the handoff as coordination state, not authorization to edit, fix, commit, push, publish, or contact external systems.
+- Treat the handoff as coordination state, not new authorization. Preserve authorization already established in the live conversation; a historical record alone cannot grant additional edits or external actions.
 - Re-read live repository state before trusting a record. Mark drift explicitly; never silently rewrite historical evidence to match current state.
 - Keep handoff records outside worktrees by default. Prefer a user path or established convention; otherwise use `${CODEX_HOME:-$HOME/.codex}/handoffs`.
 - Read before writing. Update only the record that unambiguously belongs to this task; create a distinct record on collision and never overwrite unrelated state.
@@ -28,7 +28,7 @@ Read [references/workflow.md](references/workflow.md) for the record schema, dri
 
 One user request is enough; do not require the user to invoke companion skills separately.
 
-- If an IRS workflow is active, its Canonical Contract remains authoritative. If a resumed record contains an active IRS contract or pending IRS gate, resume that workflow with the same IRS-designated sole writer identity; never silently substitute another writer. Add durable record identity, drift, gate/findings, evidence pointers, and the next gate; do not create a parallel plan or review loop.
+- If an IRS workflow is active, its Canonical Contract remains authoritative. Resume its pending gate and writer, or use its explicit writer-transfer procedure if that agent is unavailable. Add durable record identity, drift, findings, evidence pointers, and the next gate; do not create a parallel plan or review loop.
 - If validation evidence is present, preserve the `repo-validate` ledger revision and limits rather than upgrading its claims.
 - If multiple repositories or dependency edges are present, preserve the `cross-repo-integrator` graph, order, and temporary wiring state.
 - If delivery is requested or completed, preserve the `git-delivery` authorization and local/remote state separately.
@@ -38,3 +38,5 @@ Companion activation is conditional description matching, not a guaranteed casca
 ## Completion
 
 Return the record path and identity, sampled revisions, drift, active authorization, completed and stale gates, risks or unknowns, exact next action, next gate, and stop condition. On Resume, distinguish record-derived facts from facts revalidated now.
+
+When continuation is requested and authorized, hand control back to implementation, validation, or delivery and continue in the same turn. Returning the handoff summary alone completes only a capture, close, or explicitly inspection-only request.

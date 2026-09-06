@@ -39,7 +39,9 @@ When durable capture is requested or needed, a pause or stop is an interrupt pat
 2. Re-sample repository roots, branches, HEADs, worktree fingerprints, upstreams, divergence, dirty paths, dependencies, validation evidence, and delivery state.
 3. Compare record versus live state field by field. Classify differences as expected progress, stale evidence, conflicting work, unavailable fact, or harmless metadata drift.
 4. Update the active IRS Canonical Contract when present. Resume at the earliest gate invalidated by diff, revision, evidence, or authorization drift; do not repeat unchanged gates.
-5. Stop for direction when drift changes behavior, ownership, public contract, permitted scope, external side effects, or makes task identity ambiguous.
+5. Reconcile drift with the live request and existing authorization. Continue expected in-scope progress; ask only when conflicting work, ambiguous task identity, or a change outside the authorized outcome prevents a safe next action. Explain the missing fact and impact, and continue independent authorized work.
+
+Preserve the original goal and unfinished actions when incorporating a new constraint or status question. A request to resume authorized work continues beyond this record update; a request only to inspect drift remains read-only.
 
 ## Close
 

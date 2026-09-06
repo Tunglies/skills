@@ -10,6 +10,7 @@ Turn a ready change into only the Git state transition the user actually authori
 ## Rules
 
 - Parse authorization per action and repository. Commit does not imply push; push does not imply PR; none imply tag, publication, merge, deployment, or release.
+- Reuse authorization from the live conversation for the same resolved action and target. Complete authorized preparation before asking about a genuinely missing target or permission; do not request confirmation again simply because execution reaches this skill.
 - Inspect repository identity, instructions, branch, HEAD, upstream, divergence, remotes, worktrees, submodules if relevant, staged and unstaged paths, and user-owned changes before mutation.
 - Before index mutation, record the original index/staged state and derive the exact authorized patch and hunks. Never commit unrelated pre-staged content.
 - Construct a staged-delivery candidate only when its complete index patch can equal the reviewed authorized candidate. Do not use broad staging that can absorb unrelated work.

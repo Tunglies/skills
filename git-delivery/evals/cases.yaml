@@ -1,5 +1,15 @@
 version: 1
 cases:
+  - id: reuse-action-authorization
+    prompt: 'Continue the exact local commit already authorized earlier in this conversation. Target and reviewed candidate are unchanged and checks pass. Do not push.'
+    expected:
+      invoke: true
+      mode: commit
+      recheck_candidate_identity: true
+      redundant_authorization_prompt: false
+      commit: true
+      push: false
+
   - id: inspect-readiness
     prompt: 'Inspect whether the current reviewed diff is ready to commit, but do not stage or change anything.'
     expected:

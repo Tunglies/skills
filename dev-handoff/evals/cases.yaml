@@ -1,5 +1,25 @@
 version: 1
 cases:
+  - id: resume-preserves-live-authorization
+    prompt: 'Resume the handoff and finish the local implementation already authorized in this conversation. The record matches live state. No commit or push.'
+    expected:
+      invoke: true
+      mode: resume
+      preserve_live_authorization: true
+      record_grants_new_authorization: false
+      continue_implementation_after_record: true
+      redundant_authorization_prompt: false
+      commit: false
+      push: false
+
+  - id: inspect-drift-only
+    prompt: 'Inspect this handoff for drift only. Do not resume implementation or write files.'
+    expected:
+      invoke: true
+      inspect_live_state: true
+      implementation: false
+      writes: false
+
   - id: capture-active-irs
     prompt: 'Pause this IRS implementation and leave a durable handoff for tomorrow. Do not commit.'
     expected:

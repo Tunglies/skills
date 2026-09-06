@@ -1,5 +1,20 @@
 version: 1
 cases:
+  - id: blocked-edge-independent-work
+    prompt: 'Do not push the source. Its new remote SHA blocks final consumer resolution, but authorized local consumer preparation and source checks remain independent.'
+    expected:
+      invoke: true
+      push: false
+      final_resolution_blocked: true
+      continue_independent_local_work: true
+      temporary_proof_is_delivery_proof: false
+
+  - id: single-repository-skill-folders
+    prompt: 'Edit several independent skill folders in this one repository. Read external installed copies only to compare them; do not change those copies.'
+    expected:
+      invoke: false
+      infer_cross_repository_edits: false
+
   - id: map-two-repositories
     prompt: 'Map the dependency from the local plugin repository to its desktop app consumer and show the safe landing order. Do not edit.'
     expected:

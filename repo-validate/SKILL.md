@@ -13,7 +13,7 @@ Select and report the smallest credible validation set for the actual change and
 - Bind every result to the tested revision, candidate tree, worktree fingerprint, and relevant environment. A result becomes stale when one changes, and an incomplete fingerprint cannot support current confidence. The sole exception is rebinding a locked staged-delivery candidate to its authorized commit when the resulting commit tree is exactly identical.
 - Classify evidence as static, unit, integration, runtime, platform, device, or production. Never promote one class into another.
 - Classify failures as introduced, pre-existing, environment, or unknown only when evidence supports the label.
-- Validation findings do not authorize fixes. Do not edit source, delete artifacts, change dependencies, or weaken checks to obtain a pass.
+- Validation alone does not authorize fixes. Return failures to the implementation owner when fixes are already authorized, then resume affected checks; do not end the task at a diagnostic report. Under IRS only its sole writer edits. A standalone implementation owner may continue its authorized fix without activating IRS merely for validation. Never delete user artifacts or weaken checks to obtain a pass.
 - Report skipped, unavailable, flaky, and unperformed checks as gaps rather than passes.
 - Keep the ledger in the response or active IRS contract by default. Do not create or modify a ledger file unless the user explicitly authorizes a durable path.
 

@@ -34,7 +34,7 @@ For Inspect PR, resolve the provider, repository, and exact existing PR. Read it
 
 For Push, resolve the exact remote and refspec, check divergence and expected remote identity, and use only the authorized update kind. A force update requires explicit force authorization and a lease or equivalent remote-state guard when supported. Verify the remote ref after pushing; report verification failure separately from local state.
 
-At an intermediate source checkpoint, accept only the locked staged-delivery candidate from IRS, perform the recorded separately authorized actions, and verify the resulting source identity is reachable. Report the identity and new worktree fingerprint to `cross-repo-integrator`. Stop when the candidate changes, authorization is missing, or reachability fails.
+At an intermediate source checkpoint, accept only the locked staged-delivery candidate from IRS, perform the recorded separately authorized actions, and verify the resulting source identity is reachable. Report the identity and new worktree fingerprint to `cross-repo-integrator`. Candidate drift returns to IRS for affected gates; missing authorization or reachability blocks this delivery transition. Return control for any independent authorized local work.
 
 For Create PR, resolve repository/provider, head and base, title/body intent, and confirm the head is already reachable without an implicit push. For Update PR, resolve the existing PR and the exact fields authorized to change. Do not alter reviewers, labels, title/body, close state, base, or head unless that specific update was requested. Neither mode authorizes push, merge, checks, review submission, or release. Report inspection, creation, and update separately.
 

@@ -24,18 +24,20 @@ Build a directed graph and identify cycles or independently deliverable componen
 5. Build or test consumers against that exact state.
 6. Deliver source before consumer when consumers depend on a newly reachable commit, tag, version, or artifact.
 
-All repository edits require one active IRS workflow and the same IRS-designated sole writer identity across every repository, sequential source/consumer phase, correction, and resume. This includes manifest, lockfile, generated metadata, config, docs, and wiring edits. If IRS is unavailable or the designated writer cannot continue, complete only the read-only repository and edge map, report the missing gate, and stop before editing. Update the shared contract before changing repository scope or edge behavior.
+All repository edits require one active IRS workflow and its designated sole writer across repositories, phases, and corrections. This includes manifest, lockfile, generated metadata, config, docs, and wiring edits. IRS owns writer transfer on resume; do not create a competing writer here. If IRS is unavailable, complete the read-only map and report the missing gate before editing. Update the shared contract before changing repository scope or edge behavior.
+
+Topological order constrains dependent work, not every task. Delegate independent repository inspection, caller analysis, or isolated validation when useful; integrate those results into this graph. Keep writes with the IRS writer and serialize commands that share mutable dependency or build state.
 
 ## Temporary Wiring
 
 Search manifests, locks, workspace configuration, package manager state, and build output for local paths, links, patches, replaces, unpublished versions, or manually copied artifacts. Label them; do not assume a clean diff means installed or resolved dependencies are deliverable.
 
-Before final delivery, replace temporary wiring with the intended reachable identity and prove the consumer actually resolves it. If the source is not yet reachable or authorization does not allow making it reachable, stop at that dependency gate. Do not disguise temporary state with hand-edited lockfiles.
+Before final delivery, replace temporary wiring with the intended reachable identity and prove the consumer actually resolves it. If the source is not yet reachable or authorization does not allow making it reachable, block that resolution and report the exact prerequisite. Continue authorized source edits, consumer preparation, or local checks that do not require reachability, keeping temporary proof explicitly local. Do not disguise temporary state with hand-edited lockfiles.
 
 ## Proof And Delivery
 
 Proof should bind source commit/version/artifact to the consumer manifest, lock/resolution output, and consumer validation. Record unavailable registry, remote, platform, or build evidence explicitly.
 
-When a consumer needs a newly reachable source identity, record the intermediate checkpoint and target identity in the graph. The IRS workflow owns candidate phase, gates, and the readiness lock; `git-delivery` consumes the locked staged-delivery candidate for separately authorized actions and verifies reachability. After verification, refresh the graph and worktree fingerprint, then continue the consumer with the same IRS-designated sole writer without closing the workflow or repeating unchanged source gates. Stop at the dependency gate when delivery is unauthorized, the candidate changes, or reachability remains unverified.
+When a consumer needs a newly reachable source identity, record the intermediate checkpoint and target identity in the graph. IRS owns candidate phases, checkpoint gates, writer continuity, and readiness; `git-delivery` performs authorized delivery and verifies reachability. Refresh this graph with the resulting identity and fingerprint. Apply the Temporary Wiring boundary above to blocked resolution, and return candidate drift to the affected IRS gate.
 
 Commit, amend, push, PR, tag, version bump, publication, and release are distinct actions. Route only explicitly requested Git actions through `git-delivery`; tags, registries, artifacts, and releases remain out of scope until separately authorized.

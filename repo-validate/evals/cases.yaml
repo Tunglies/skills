@@ -1,5 +1,21 @@
 version: 1
 cases:
+  - id: authorized-fix-continues
+    prompt: 'Fix the native lifecycle issue and validate it. The integration check finds an in-scope failure. No IRS workflow is active.'
+    expected:
+      invoke: true
+      return_to_authorized_implementation_owner: true
+      continue_fix_and_affected_checks: true
+      redundant_authorization_prompt: false
+      activate_irs_for_validation_alone: false
+
+  - id: finish-after-required-checks
+    prompt: 'All required integration checks passed on the current candidate; no changes or unresolved concerns remain. Report the local result.'
+    expected:
+      invoke: true
+      report_evidence_limits: true
+      broaden_or_repeat_checks: false
+
   - id: plan-native-validation
     prompt: 'Plan proportionate validation for the current diff using this repository scripts and CI conditions. Do not run anything.'
     expected:
