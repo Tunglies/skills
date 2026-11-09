@@ -4,7 +4,7 @@
 
 Read applicable repository instructions and inspect the current revision, dirty paths, diff, manifests, test configuration, package or build scripts, generated-file rules, and relevant CI workflow conditions. Search callers and cross-module contracts when the diff alone understates impact.
 
-Use **worktree fingerprint** to mean HEAD plus content digests for the staged diff, unstaged diff, relevant untracked contents, and relevant dependency, lock, resolution, and generated state. Path names alone are insufficient. If relevant content cannot be read or fingerprinted, mark the fingerprint incomplete; it cannot support an unchanged or current-evidence claim. The same HEAD and path set with different content is a different fingerprint and stales evidence bound to the prior fingerprint.
+Use **worktree fingerprint** to mean HEAD plus content digests for the staged diff, unstaged diff, relevant untracked contents, and relevant dependency, lock, resolution, and generated state. Path names alone are insufficient. If relevant content cannot be read or fingerprinted, mark the fingerprint incomplete; it cannot support an unchanged or current-evidence claim. The same HEAD and path set with different content is a different fingerprint. Invalidate exact readiness, then identify which results depend on the changed inputs. Retain only demonstrably unaffected evidence with its original identity and an applicability reason; unknown impact requires revalidation.
 
 Do not treat a CI job name as evidence that its commands ran. Account for path filters, matrices, feature flags, platform guards, skipped tests, caches, and conditional steps.
 
@@ -54,4 +54,4 @@ For each repository record:
 - artifacts or side effects created;
 - stale conditions and required rerun scope.
 
-Audit existing evidence against these fields. Except for an exact locked-candidate-to-commit-tree rebind, a green command on another revision, a different fingerprint, or an incomplete fingerprint is historical context, not current proof.
+Audit existing evidence against these fields. Historical results are not new runs: reuse them only after documenting unchanged relevant inputs, environment, and acceptance coverage. Unknown impact or an incomplete relevant fingerprint cannot support current proof. Exact delivery readiness still binds the complete current candidate; an identical locked-candidate-to-commit-tree transition needs no rerun.

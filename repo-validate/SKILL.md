@@ -1,16 +1,20 @@
 ---
 name: repo-validate
-description: Build or audit revision-bound validation evidence. Activate implicitly for nontrivial changes involving multiple evidence layers, generated state, cross-module or dependency contracts, native runtime, platform or device behavior, CI conditions, or substantive failure attribution. Explicit $repo-validate invocation also supports focused validation standalone or alongside IRS; do not implicitly activate for ordinary focused tests, simple checks, or generic verification.
+description: Run or audit revision-bound validation for integration, generated state, dependency contracts, native platforms, CI, or failure attribution. Use for focused checks when explicitly invoked; ordinary test runs need no skill.
 ---
 
 # Repository Validation
 
 Select and report the smallest credible validation set for the actual change and its risk.
 
+## Authority and scope
+
+Follow the current user request over this skill’s workflow defaults, within system, developer, and tool constraints. Reuse established authorization; ask only for a material unresolved decision. If a skill instruction actually blocks progress, cite that instruction and explain the concrete missing prerequisite while continuing independent authorized work.
+
 ## Rules
 
 - Discover repository instructions, manifests, native scripts, workflow conditions, the current diff, and affected contracts before choosing checks.
-- Bind every result to the tested revision, candidate tree, worktree fingerprint, and relevant environment. A result becomes stale when one changes, and an incomplete fingerprint cannot support current confidence. The sole exception is rebinding a locked staged-delivery candidate to its authorized commit when the resulting commit tree is exactly identical.
+- Bind every result to the tested revision, candidate tree, worktree fingerprint, and relevant environment. When these change, reassess the inputs and claim of each result. Refresh exact delivery readiness, but retain unaffected evidence with an explicit applicability reason, never as a new run. An incomplete relevant fingerprint cannot support current confidence. An identical locked candidate may be rebound to its authorized commit without rerunning.
 - Classify evidence as static, unit, integration, runtime, platform, device, or production. Never promote one class into another.
 - Classify failures as introduced, pre-existing, environment, or unknown only when evidence supports the label.
 - Validation alone does not authorize fixes. Return failures to the implementation owner when fixes are already authorized, then resume affected checks; do not end the task at a diagnostic report. Under IRS only its sole writer edits. A standalone implementation owner may continue its authorized fix without activating IRS merely for validation. Never delete user artifacts or weaken checks to obtain a pass.

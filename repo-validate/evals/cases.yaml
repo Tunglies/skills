@@ -133,3 +133,12 @@ cases:
     prompt: 'Verify the spelling of these three words.'
     expected:
       invoke: false
+
+  - id: unrelated-doc-drift
+    prompt: A native integration run passed. Only an unrelated spelling correction changed
+      afterward; its independence from test inputs and acceptance is verified.
+    expected:
+      refresh_candidate_identity: true
+      retain_evidence_with_reason: true
+      claim_new_test_run: false
+      automatic_integration_rerun: false
