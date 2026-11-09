@@ -1,11 +1,15 @@
 ---
 name: dev-handoff
-description: Capture, resume, transfer, or close a durable development handoff for a cross-session task, a requested durable pause, or an existing handoff record. Revalidate drift and return control to the authorized workflow on resume. Do not use for ordinary same-turn continuation, status questions, or a pause with no durable-state need; the record grants no new edit or delivery permission.
+description: Capture, resume, or close durable development state for cross-session work or an existing handoff. Excludes ordinary status updates, same-turn continuation, and pauses without durable capture.
 ---
 
 # Development Handoff
 
 Preserve enough revision-bound state that the next worker can continue at the first stale or incomplete gate without reconstructing the task.
+
+## Authority and scope
+
+Follow the current user request over this skill’s workflow defaults, within system, developer, and tool constraints. Reuse established authorization; ask only for a material unresolved decision. If a skill instruction actually blocks progress, cite that instruction and explain the concrete missing prerequisite while continuing independent authorized work.
 
 ## Rules
 
@@ -19,7 +23,7 @@ Preserve enough revision-bound state that the next worker can continue at the fi
 ## Choose One Mode
 
 - **Capture:** Immediately snapshot a durably paused, stopped, or transferred task at its current gate after sampling its state.
-- **Resume:** Load a matching durable record, revalidate every repository and external fact that can drift, and continue from the earliest stale or incomplete gate.
+- **Resume:** Load a matching durable record, revalidate repository state and external facts needed for the next action, and continue from the earliest stale or incomplete gate.
 - **Close:** Revalidate final state, record the outcome and residual work, then mark the record closed without deleting its history.
 
 Read [references/workflow.md](references/workflow.md) for the record schema, drift procedure, and mode details.
