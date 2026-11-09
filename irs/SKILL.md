@@ -1,11 +1,15 @@
 ---
 name: irs
-description: Coordinate IRS / 3pass coding work when explicitly requested, when a sole writer plus independent correctness and simplification reviews are required, or when edits span repositories or an explicit source/consumer dependency edge. Recognizes "one implement one review one simplify" and "一个编码一个审查一个更简代码". Do not use for tax, ordinary single-repository implementation or review, read-only multi-repository mapping, or generic planning.
+description: Coordinate one writer with independent correctness and simplification reviews for IRS / 3pass requests or coordinated multi-repository implementation. Excludes ordinary code review and read-only repository mapping.
 ---
 
 # IRS
 
 IRS means Implement, Review, Simplify. Use it to keep coding changes scoped, independently reviewed, and convergent.
+
+## Authority and scope
+
+Follow the current user request over this skill’s workflow defaults, within system, developer, and tool constraints. Reuse established authorization; ask only for a material unresolved decision. If a skill instruction actually blocks progress, cite that instruction and explain the concrete missing prerequisite while continuing independent authorized work.
 
 ## Rules
 
@@ -36,11 +40,11 @@ Record one shared source of truth before dispatching work, using only applicable
 - mode, authorization, baseline revision, current worktree fingerprint and candidate diff, candidate phase (`working` or `staged-delivery`), and completed gates;
 - goal, non-goals, allowed files or modules, and open decisions;
 - preserved and requested behavior, including relevant edge and failure paths;
-- diff budget, allowed new structures, chosen shape, and why smaller credible shapes fail;
+- user-imposed limits, any useful size estimate, and material design tradeoffs;
 - repository-native validation and required manual or runtime evidence.
 - when applicable, durable handoff identity and drift, validation ledger revision and gaps, repository/dependency graph and order, and exact requested Git delivery actions and state.
 
-The worktree fingerprint binds HEAD to content digests for staged and unstaged diffs, relevant untracked contents, and relevant dependency, lock, resolution, and generated state. Path names alone are insufficient; incomplete or changed fingerprints stale prior readiness. When commit or amend is authorized, the readiness lock binds a staged-delivery candidate, not an earlier unstaged review. The IRS Canonical Contract remains the core source of truth when companions are active. Reference companion-owned records rather than creating parallel plans or review loops. Give every role the raw request, contract, repository instructions, and current candidate or relevant files. Isolate other agents' conclusions, not requirements or evidence. Update the contract only for new evidence, authorization, or accepted scope.
+The worktree fingerprint binds HEAD to content digests for staged and unstaged diffs, relevant untracked contents, and relevant dependency, lock, resolution, and generated state. Path names alone are insufficient; incomplete or changed fingerprints invalidate the readiness lock; assess affected evidence before rerunning checks. When commit or amend is authorized, the readiness lock binds a staged-delivery candidate, not an earlier unstaged review. The IRS Canonical Contract remains the core source of truth when companions are active. Reference companion-owned records rather than creating parallel plans or review loops. Give every role the raw request, contract, repository instructions, and current candidate or relevant files. Isolate other agents' conclusions, not requirements or evidence. Update the contract only for new evidence, authorization, or accepted scope.
 
 ## Companion Routing
 
@@ -63,7 +67,7 @@ After compaction or a mid-task message, reconcile the original goal, completed w
 
 ## Completion
 
-Finish when the contract and preservation boundary hold, review findings are resolved, required validation passes or missing evidence is explicit, the budget is accepted, and no unrelated or unauthorized action is included.
+Finish when the contract and preservation boundary hold, review findings are resolved, required validation passes or missing evidence is explicit, any user-imposed limits are respected, and no unrelated or unauthorized action is included.
 
 Report mode, material scope decisions, behavior before and after, changed files, validation, finding dispositions, budget, residual risk, and exact local and remote delivery state. For review-only work, lead with findings and state that no files changed.
 

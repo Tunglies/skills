@@ -2,12 +2,12 @@
 
 ## Handoffs
 
-- **Writer:** Gets shape, scope, non-goals, behavior boundary, budget, and validation. It alone edits and never commits.
+- **Writer:** Gets shape, scope, non-goals, behavior boundary, budget, and validation. It alone edits. The main agent may be the designated writer; a delegated writer does not perform delivery.
 - **Correctness reviewer:** Gets acceptance conditions, behavior boundary, scope, full diff, and validation. Withhold writer rationale unless factually necessary.
 - **Simplification reviewer:** Gets behavior boundary, non-goals, budget, full diff, and validation evidence, without the other reviewer's conclusions.
-- **Main agent:** Records state and findings, reads the diff, dispatches gates, validates, and performs authorized delivery. It is not a second writer.
+- **Main agent:** Records state and findings, reads the diff, dispatches gates, validates, and performs authorized delivery. It does not edit when another agent owns the writer role.
 
-Use distinct fresh reviewers. If delegation is unavailable, the main agent may write but must identify missing independent gates.
+Use distinct reviewers with independent initial context; do not pass one reviewer’s conclusions to the other. Reuse those reviewers for corrections on the same task. Use available delegation tools without assuming particular model names or configuration. If delegation is unavailable, continue authorized preparation and identify missing independent gates; never report self-review as independent approval.
 
 Delegate bounded independent reads, caller analysis, or validation when they can improve coverage or reduce elapsed work. Give each delegate its scope, snapshot, output, and stop condition; the main agent integrates results and resolves disagreements. Keep edits with the sole writer, and avoid concurrent checks that mutate shared build or generated state. Do not spawn agents for trivial work that the current role can finish directly, or wait idle while independent work remains.
 
@@ -22,12 +22,12 @@ If the writer is unavailable on resume, first establish that it is no longer wri
 5. When commit or amend is authorized, have `git-delivery` perform its read-only index-isolation preflight and construct the exact staged-delivery candidate before final gates. Record the original index, authorized patch/hunks, staged-delivery candidate tree identity, and worktree fingerprint. For amend, also require explicit rewrite authorization and record the exact old commit (normally current HEAD; stop if another target is unsupported), its parent, and the complete replacement tree. If exact isolation is unavailable, stop before changing the index.
 6. Final correctness review covers the full current candidate, requested behavior, drift, edge/error paths, cross-module contracts, tests, and validation gaps.
 7. Simplification review checks unnecessary files, state, APIs, abstractions, helpers, duplication, budget overruns, and complexity required for safety. Run it alongside correctness on the same stable candidate when independent; defer it when unresolved correctness issues would invalidate its premise. Integrate both results before accepting edits or declaring readiness.
-8. After all accepted edits receive fresh full correctness, validate that candidate and establish its readiness lock. Missing required evidence remains explicit and prevents unsupported readiness claims.
+8. After accepted edits receive independent review of affected behavior plus a full-candidate consistency check, validate that candidate and establish its readiness lock. Missing required evidence remains explicit and prevents unsupported readiness claims.
 9. `git-delivery` may consume only the locked staged-delivery candidate for an authorized commit or amend. Perform other separately authorized delivery actions, then final handoff or Close when requested.
 
 Record findings as ID, `blocking` or `optional`, evidence, `accepted`/`deferred`/`rejected`, reason, and owner. Only accepted blockers or behavior-preserving simplifications trigger edits.
 
-After a blocker, the IRS-designated sole writer fixes it, any staged-delivery candidate is reconstructed, affected validation reruns, and the full candidate receives final correctness review. After every accepted simplification, that sole writer applies it. Any candidate-byte change, whether code, docs, config, generated output, metadata, or another file type, requires candidate reconstruction when applicable and fresh full correctness on the updated candidate. Rereview may be skipped only when candidate content is byte-for-byte unchanged.
+After a blocker or accepted simplification, the sole writer applies the correction and reconstructs the candidate when applicable. Refresh its identity for every byte change. The independent correctness reviewer examines the delta, affected contracts, and full-candidate consistency, explicitly carrying forward unaffected findings. Repeat the full review when impact cannot be bounded or earlier evidence is unavailable. Rerun affected validation; a documentation-only correction does not automatically require unrelated runtime checks. No changed candidate inherits approval without this impact assessment.
 
 If scope exceeds an estimated budget but remains inside the authorized outcome, record the reason and continue. A user-imposed hard cap remains binding. Ask before exceeding that cap or introducing behavior, public contract changes, ownership changes, or external effects outside the request; continue work that does not depend on that decision.
 
