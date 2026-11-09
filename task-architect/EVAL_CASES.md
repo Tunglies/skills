@@ -98,6 +98,22 @@ Input: A weighted risk expression evaluates to `37.5` before rounding.
 
 Expected: Risk is `38`, not `37` or banker's rounding. Keep the original dimension vector so the result can be audited.
 
+## P. Natural-language modes
+
+Without flags: "Trace why shutdown hangs" selects `investigate`; "Review this diff, do not edit" selects `review`; "Package the approved plan for another worker" selects `handoff`; "Implement approved option B" selects `execute`. Do not ask the user to choose a mode name. In `execute`, complete authorized implementation and validation rather than stopping at a generated prompt.
+
+## Q. Mixed intent and continuation
+
+"Investigate then fix this failing test" selects `execute`, investigates first, and proceeds within applicable approval gates. A subsequent status question or compatibility constraint preserves the unfinished task. "Review and fix" permits scoped corrections; "review only" does not.
+
+## R. Overrides and conflicts
+
+"--mode=plan Fix this bug" honors the explicit override and plans the fix without edits or a redundant mode question. "--mode=execute Do not edit" remains read-only under the no-edit constraint. Ask only if the outcome is still materially ambiguous. No flag is required for any unambiguous request.
+
+## S. Execution with unresolved risk gates
+
+"Implement encrypted-storage fallback" selects `execute`, but an unresolved R2 design decision still blocks affected implementation. Mode inference never invents approval or bypasses risk gates. Existing explicit approval of the same scope is reused.
+
 ## Evaluation checklist
 
 - [ ] Five risk factors, five complexity factors, independent P value, numeric arithmetic, and confidence are explained.

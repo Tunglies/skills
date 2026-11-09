@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.0 - Intent-based mode selection
+
+- Infer investigate, plan, review, handoff, or execute from natural-language intent and ongoing task context.
+- Keep explicit mode flags optional and use read-only planning for ambiguous goals.
+- Preserve scoped authorization, no-edit constraints, and unresolved risk gates; add routing and conflict evaluation cases.
+
 ## v1.2.1 - Full English documentation
 
 - Rewrote all four Markdown documents entirely in English, including frontmatter metadata, sample requests, evaluation cases, and supporting text.

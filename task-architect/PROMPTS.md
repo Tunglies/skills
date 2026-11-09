@@ -8,15 +8,27 @@ These examples are **invocations, not system prompts**. The complete workflow is
 $task-architect Refactor Mihomo configuration management, preserve IPC compatibility, and avoid overengineering.
 ```
 
-Default: `plan` (read-only). The agent investigates what it can, rates risk and complexity, asks only decisions that matter, and compiles a portable execution prompt after the blocking decisions are resolved. No `--mode=plan` needed.
+The agent chooses the mode from your intent and conversation. This explicit refactoring request selects `execute`, with investigation and applicable risk gates before changes. If you only want a plan, say "Plan this refactor; do not edit." No mode flag is needed.
 
 ```text
 $task-architect Improve the TUN startup sequence.
 ```
 
-A short request is not permission to modify files; it is enough to begin investigation and requirements engineering.
+This broad improvement goal selects read-only `plan` until the intended change is clear. Short requests such as "Fix the failing parser test" can select `execute`; clarity of intent, not length, determines the mode.
 
-## Optional modes
+## Natural-language routing
+
+```text
+$task-architect Trace why system proxy settings are sometimes not restored on Windows.
+$task-architect Review the current branch for regressions. Do not edit.
+$task-architect Package our approved plan for another engineer.
+$task-architect Implement option B within the scope I just approved.
+$task-architect Investigate the failing test, then fix it and run the focused check.
+```
+
+These select `investigate`, `review`, `handoff`, `execute`, and `execute` respectively. Existing approval is reused; unresolved risk gates still apply. A status question or added constraint does not reset an active task.
+
+## Optional explicit overrides
 
 ```text
 $task-architect --mode=investigate Trace why system proxy settings are sometimes not restored on Windows.
