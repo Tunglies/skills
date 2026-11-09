@@ -24,9 +24,9 @@ Build a directed graph and identify cycles or independently deliverable componen
 5. Build or test consumers against that exact state.
 6. Deliver source before consumer when consumers depend on a newly reachable commit, tag, version, or artifact.
 
-All repository edits require one active IRS workflow and its designated sole writer across repositories, phases, and corrections. This includes manifest, lockfile, generated metadata, config, docs, and wiring edits. IRS owns writer transfer on resume; do not create a competing writer here. If IRS is unavailable, complete the read-only map and report the missing gate before editing. Update the shared contract before changing repository scope or edge behavior.
+Keep one contract and designated writer for dependent edits across repositories, including manifests, locks, generated metadata, and wiring. With IRS active, reuse its writer and transfer procedure. Without IRS, record the equivalent scope, ownership, graph, validation, and any missing independent review directly; companion availability does not revoke edit authorization. Explicitly required review gates still constrain readiness. Update the shared contract before changing repository scope or edge behavior.
 
-Topological order constrains dependent work, not every task. Delegate independent repository inspection, caller analysis, or isolated validation when useful; integrate those results into this graph. Keep writes with the IRS writer and serialize commands that share mutable dependency or build state.
+Topological order constrains dependent work, not every task. Delegate independent repository inspection, caller analysis, or isolated validation when useful; integrate those results into this graph. Keep writes with the designated writer and serialize commands that share mutable dependency or build state.
 
 ## Temporary Wiring
 
@@ -38,6 +38,6 @@ Before final delivery, replace temporary wiring with the intended reachable iden
 
 Proof should bind source commit/version/artifact to the consumer manifest, lock/resolution output, and consumer validation. Record unavailable registry, remote, platform, or build evidence explicitly.
 
-When a consumer needs a newly reachable source identity, record the intermediate checkpoint and target identity in the graph. IRS owns candidate phases, checkpoint gates, writer continuity, and readiness; `git-delivery` performs authorized delivery and verifies reachability. Refresh this graph with the resulting identity and fingerprint. Apply the Temporary Wiring boundary above to blocked resolution, and return candidate drift to the affected IRS gate.
+When a consumer needs a newly reachable source identity, record the intermediate checkpoint and target identity in the graph. When active, IRS owns candidate phases, checkpoint gates, writer continuity, and readiness. Otherwise use `git-delivery` standalone readiness, retaining the coordinated contract and any explicitly required independent review gates. `git-delivery` performs authorized delivery and verifies reachability. Refresh this graph with the resulting identity and fingerprint. Apply the Temporary Wiring boundary above to blocked resolution, and return candidate drift to the affected review or validation gate.
 
 Commit, amend, push, PR, tag, version bump, publication, and release are distinct actions. Route only explicitly requested Git actions through `git-delivery`; tags, registries, artifacts, and releases remain out of scope until separately authorized.

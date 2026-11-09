@@ -38,26 +38,27 @@ cases:
     expected:
       invoke: true
       mode: implement
-      irs_required_before_code_edits: true
-      code_edits_without_irs: false
+      coordinated_contract_required: true
+      use_available_irs: true
       repository_authorization_independent: true
 
   - id: manifest-lock-only-edits
     prompt: 'Update only the dependency manifest in repo A and its generated lockfile in repo B as one coordinated change.'
     expected:
       invoke: true
-      irs_required_before_repository_edits: true
-      repository_edits_without_irs: false
+      coordinated_contract_required: true
+      use_available_irs: true
       stable_writer_identity: true
 
-  - id: irs-unavailable-map-only
+  - id: irs-unavailable-authorized-work
     prompt: 'Use $cross-repo-integrator to implement this two-repository API change, but assume IRS is unavailable.'
     expected:
       invoke: true
       requested_mode: implement
-      effective_mode: map
-      code_edits: false
-      stop_gate: missing_irs
+      effective_mode: implement
+      authorized_code_edits: true
+      disclose_missing_reviews: true
+      claim_irs_passed: false
 
   - id: temporary-path-not-deliverable
     prompt: 'The app builds through a Cargo path patch to the sibling library; prepare the repositories for final delivery.'
@@ -116,3 +117,11 @@ cases:
     prompt: 'Fix this private helper in the current repository and run its unit test.'
     expected:
       invoke: false
+
+  - id: explicit-irs-unavailable
+    prompt: Implement the dependency change, but require IRS independent gates before
+      declaring delivery readiness. IRS is unavailable.
+    expected:
+      continue_authorized_preparation: true
+      delivery_ready: false
+      disclose_missing_reviews: true
