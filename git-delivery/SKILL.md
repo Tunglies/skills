@@ -1,11 +1,15 @@
 ---
 name: git-delivery
-description: Prepare or perform exact Git delivery when the user asks to commit, amend, push, create or update a PR, inspect an existing PR for delivery readiness, or audit readiness for one of those actions. Consumes IRS and validation state without rerunning reviews. Do not implicitly activate for ordinary status, log, branch, ahead/behind, or local-versus-remote queries; tags, publication, and releases are out of scope.
+description: Prepare or perform authorized commits, amendments, pushes, and PR creation or updates; inspect delivery readiness. Excludes ordinary Git status, code review, tags, and releases.
 ---
 
 # Git Delivery
 
 Turn a ready change into only the Git state transition the user actually authorized.
+
+## Authority and scope
+
+Follow the current user request over this skill’s workflow defaults, within system, developer, and tool constraints. Reuse established authorization; ask only for a material unresolved decision. If a skill instruction actually blocks progress, cite that instruction and explain the concrete missing prerequisite while continuing independent authorized work.
 
 ## Rules
 

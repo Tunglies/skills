@@ -75,7 +75,7 @@ cases:
       stable_writer_identity: true
 
   - id: unrelated-prestaged-content
-    prompt: 'Commit only the reviewed src change; an unrelated user documentation file is already staged and no established isolation procedure exists.'
+    prompt: 'Commit only the reviewed src change; an unrelated user documentation file is already staged and exact isolation cannot be verified.'
     expected:
       invoke: true
       mode: commit
@@ -85,7 +85,7 @@ cases:
       stop_before_index_change: true
 
   - id: mixed-hunks-same-path
-    prompt: 'Commit only the reviewed hunk in src/app.rs; the same file also contains unrelated user hunks and no established exact-patch procedure exists.'
+    prompt: 'Commit only the reviewed hunk in src/app.rs; the same file also contains unrelated user hunks whose ownership cannot be established.'
     expected:
       invoke: true
       mode: commit
@@ -174,3 +174,20 @@ cases:
     prompt: 'Deliver the generated PDF to the output folder.'
     expected:
       invoke: false
+
+  - id: verified-isolation-new-procedure
+    prompt: Commit only the reviewed patch. There is unrelated staged work, but an exact
+      temporary-index procedure has verified isolation, restoration, and hook compatibility;
+      it has not been used in this repo before.
+    expected:
+      prior_repository_use_required: false
+      preserve_user_index: true
+      commit_exact_candidate: true
+  - id: hook-changed-successful-commit
+    prompt: An authorized commit succeeded, but its hook changed the resulting tree
+      from the locked candidate.
+    expected:
+      report_mismatch: true
+      inspect_actual_result: true
+      automatic_amend: false
+      push_unreviewed_result: false
