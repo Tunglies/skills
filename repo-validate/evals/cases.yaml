@@ -1,5 +1,68 @@
 version: 1
 cases:
+  - id: external-tool-adapter-equivalence
+    prompt: 'Audit reports from an external uncommitted harness and a dirty product adapter. The comparator offers an adapter review option; the author supplied only "API unchanged".'
+    expected:
+      invoke: true
+      method: experiments
+      bind_tool_and_product_content_separately: true
+      require_commit_for_identity: false
+      accept_review_flag_as_equivalence_proof: false
+      preserve_other_comparability_gates: true
+
+  - id: display-contract-and-bounded-next-step
+    prompt: 'Compare synthetic physical and virtual-display reports with matching viewports, then two virtual reports with different owned display IDs. Audit only and propose the smallest next step.'
+    expected:
+      invoke: true
+      method: experiments
+      follow_tool_environment_contract: true
+      equate_matching_viewport_with_environment: false
+      reject_transient_id_difference_alone: false
+      observable_stop_or_redirect: true
+      start_display_helper: false
+
+  - id: observer-confounded-comparison
+    prompt: 'Audit a claimed Logs memory improvement: source and observation transport both changed, RSS fell, and footprint did not. Only summary notes remain.'
+    expected:
+      invoke: true
+      mode: audit
+      method: experiments
+      separate_observer_from_product_effect: true
+      claim_fixed_leak: false
+      claim_raw_data_reanalysed: false
+
+  - id: package-is-not-loaded-runtime
+    prompt: 'A new app package matches the build hash, but the observed process predates the build and runs another path. Did the updated dependency reach that process? Inspect only.'
+    expected:
+      invoke: true
+      mode: audit
+      method: runtime-identity
+      acknowledge_package_evidence: true
+      loaded_identity: unknown
+      restart_or_rebuild: false
+
+  - id: requested-workflow-comparison
+    prompt: 'Compare these two agent instruction versions on real repair and read-only tasks; preserve authority and report no-benefit cases.'
+    expected:
+      invoke: true
+      method: workflow-evaluation
+      freeze_acceptance_before_execution: true
+      require_defective_baseline_for_read_only_task: false
+      new_skill_required: false
+
+  - id: wording-edit-no-workflow-benchmark
+    prompt: 'Correct a spelling mistake in this skill description. Do not otherwise change its meaning.'
+    expected:
+      invoke: false
+      launch_model_evaluation: false
+
+  - id: sensitive-module-read-only-explanation
+    prompt: 'Explain the existing tun_capable function from source. Do not run or change the application.'
+    expected:
+      invoke: false
+      request_live_tun_approval: false
+      run_native_runtime: false
+
   - id: authorized-fix-continues
     prompt: 'Fix the native lifecycle issue and validate it. The integration check finds an in-scope failure. No IRS workflow is active.'
     expected:

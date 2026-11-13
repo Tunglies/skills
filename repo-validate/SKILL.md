@@ -1,6 +1,6 @@
 ---
 name: repo-validate
-description: Run or audit revision-bound validation for integration, generated state, dependency contracts, native platforms, CI, or failure attribution. Use for focused checks when explicitly invoked; ordinary test runs need no skill.
+description: Plan, run, or audit revision-bound validation, performance claims, artifact/runtime identity, and requested agent-workflow comparisons. Use for integration, generated contracts, native platforms, CI, or failure attribution; ordinary focused tests and wording edits need no skill unless explicitly invoked.
 ---
 
 # Repository Validation
@@ -28,6 +28,14 @@ Follow the current user request over this skill’s workflow defaults, within sy
 - **Audit:** Evaluate existing evidence for revision match, command fidelity, coverage, classification, and unsupported claims; rerun only when requested or already authorized.
 
 Read [references/workflow.md](references/workflow.md) for selection, failure classification, and the ledger schema.
+
+Load additional methods only for the question being answered:
+
+- Performance comparisons or investigations of measurement causality: [experiments](references/experiments.md).
+- Whether a dependency or fix reached a built or running consumer: [runtime identity](references/runtime-identity.md).
+- Requested comparisons of skills, agent instructions, or workflows: [workflow evaluation](references/workflow-evaluation.md). Editing instructions alone does not trigger a benchmark.
+
+These methods enrich the same validation record. Project and tool documentation own operating commands and isolation rules, including tools in separate checkouts; do not create another review loop or approval checkpoint.
 
 ## Companion Routing
 
