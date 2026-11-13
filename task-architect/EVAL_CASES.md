@@ -114,9 +114,44 @@ Without flags: "Trace why shutdown hangs" selects `investigate`; "Review this di
 
 "Implement encrypted-storage fallback" selects `execute`, but an unresolved R2 design decision still blocks affected implementation. Mode inference never invents approval or bypasses risk gates. Existing explicit approval of the same scope is reused.
 
+## T. Routine repair and explicit invocation
+
+A local parser boundary has clear acceptance, an existing failing test, and no
+public contract or ownership change. Without explicit invocation, do not activate
+Task Architect merely because this is a bug fix. With explicit invocation, screen
+gates and finish via the bounded path without assessment/planning references or
+formal ledgers. Preserve the repository's validation and review requirements.
+
+## U. Small diff with a hard gate
+
+A one-line patch changes a public response field, adds a production dependency, or
+changes a visible default. The bounded path is unavailable: load full assessment,
+apply at least R1, and resolve design approval before implementation. A tiny TUN
+change still requires at least R2. Planning approval alone cannot authorize edits.
+
+## V. Unexpected scope expansion
+
+An apparently local cache repair turns out to alter shared event ordering. Leave
+the bounded path before the cross-boundary edit, assess the newly affected scope,
+and reopen only the relevant approvals. Keep unchanged evidence; do not invent a
+fresh validation pass or ask to reapprove unaffected work.
+
+## W. Selective loading and handoff
+
+A user requests a formal scored plan or an execution handoff even for a small
+change. Read the assessment and relevant planning sections; do not use the bounded
+path to omit requested output. Conversely, an explicit ordinary repair must not
+load handoff templates just because they are linked.
+
+## X. Explanation without implementation
+
+"Explain the difference between Risk and Complexity" proposes no change. Answer
+the question, reading definitions as needed, without scoring a fictional change
+or creating a plan, approval gate, or work package.
+
 ## Evaluation checklist
 
-- [ ] Five risk factors, five complexity factors, independent P value, numeric arithmetic, and confidence are explained.
+- [ ] Full assessment explains five risk factors, five complexity factors, independent P, arithmetic, and confidence. Bounded work satisfies every entry condition without unnecessary formal scoring.
 - [ ] Hard Gates override low averages, without automatically treating read-only research as a prohibited write.
 - [ ] Proposed multi-agent topology respects file ownership, dependencies, and integration responsibility.
 - [ ] Explicit human authorization is distinguished from an agent recommendation or silence.
@@ -125,3 +160,5 @@ Without flags: "Trace why shutdown hangs" selects `investigate`; "Review this di
 - [ ] Escalation pauses affected actions and reopens only relevant approvals.
 - [ ] Feedback reports observed results and does not pretend to have automatically learned or recalibrated.
 - [ ] A one-line requirement is enough to start; follow-up decisions need no template repetition.
+
+- [ ] Skill discovery, explicit invocation, reference loading, and actual task outcomes are measured separately; manual case reasoning is not a runtime pass.

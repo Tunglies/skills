@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.0 - Task-sized workflow loading
+
+- Keep mode inference, authorization, and mandatory gate screening in the entrypoint; load scoring and planning details only when needed.
+- Avoid automatic activation for clear local repairs; explicit invocation can use a bounded execution path without formal planning artifacts.
+- Preserve scoring thresholds and approval floors; add routing, escalation, and selective-loading evaluation cases.
+
 ## v1.3.0 - Intent-based mode selection
 
 - Infer investigate, plan, review, handoff, or execute from natural-language intent and ongoing task context.

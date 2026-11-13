@@ -1,6 +1,6 @@
 # Task Architect - Short Invocation Examples
 
-These examples are **invocations, not system prompts**. The complete workflow is already in `SKILL.md`. Do not paste a long instructions template for every task.
+These examples are **invocations, not system prompts**. `SKILL.md` selects the necessary workflow and links to its details. Do not paste a long instructions template for every task.
 
 ## Everyday use: one sentence
 
@@ -79,3 +79,14 @@ Expected: an evidence-backed study, at least an R2 floor for planned key-storage
 ## Tool-specific invocation caveat
 
 `$task-architect` is a convenient example for hosts that support dollar-prefixed skill invocation. Other products may use `/task-architect`, a picker, or explicit loading of `SKILL.md`. The skill's instructions remain the same regardless of how it is loaded. The `--mode=...` suffix is a text convention, not a universal command-line flag.
+
+## Bounded local work
+
+`Fix the known off-by-one error in this local parser and run its existing test`
+should normally use the repository workflow without activating Task Architect.
+If explicitly invoked, Task Architect screens the effects and uses its bounded
+path when no gate or unresolved decision applies. It still completes authorized
+implementation; no formal plan or scoring is needed.
+
+A one-line public API change, a new production dependency, or a TUN fix cannot
+use that shortcut. Gate screening precedes the choice, regardless of diff size.
